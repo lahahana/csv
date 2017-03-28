@@ -1,2 +1,2 @@
 # csv
-Annotation based CSV serialize/deserialize tool
+Annotation based CSV serialize tool
