@@ -3,13 +3,21 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.alpha</groupId>
 	<artifactId>csv</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<description>annotation based csv serialize/deserialize tool</description>
+	<version>1.0</version>
+	<description>annotation based csv serialize tool</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-
+	<build>
+	   <plugins>
+	     <plugin>
+	       <groupId>org.apache.maven.plugins</groupId>
+	       <artifactId>maven-jar-plugin</artifactId>
+	       <version>3.0.2</version>
+	     </plugin>
+	   </plugins>
+	</build>
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
