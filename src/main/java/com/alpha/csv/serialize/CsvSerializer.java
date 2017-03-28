@@ -2,29 +2,33 @@ package com.alpha.csv.serialize;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
-import com.alpha.csv.annotations.CsvIgnore;
-import com.alpha.csv.annotations.CsvIgnoreProperties;
-import com.alpha.csv.annotations.CsvProperty;
 import com.alpha.csv.annotations.convertor.Converter;
-import com.alpha.csv.annotations.convertor.DefaultConverter;
-import com.alpha.csv.base.CsvMetaInfo;
+import com.alpha.csv.base.CsvMetaNode;
+import com.alpha.csv.base.CsvMetaTreeBuilder;
+import com.alpha.csv.base.CsvMetaTreeBuilder.CsvMetaTree;
 import com.alpha.csv.exceptions.CsvException;
+import com.alpha.csv.resolver.CsvMetaTreeResolver;
+import com.alpha.csv.resolver.PropertyResolver;
 import com.alpha.csv.util.Utils;
 
+/**
+ * Use following method to serialize object:
+ * <p>{@link #serialize(Object)}
+ * <p>{@link #serialize(Object, CSVFormat)}
+ * <p>{@link #serialize(Iterable, Class)}
+ * <p>{@link #serialize(Iterable, Class, CSVFormat)}
+ * */
 public class CsvSerializer {
     
-    public static String serialize(final Object object) throws CsvException {
+    public static String serialize(final Object object) throws CsvException, IOException {
         return serialize(object, CSVFormat.DEFAULT);
     }
 
-    public static String serialize(final Object object, final CSVFormat csvFormat) throws CsvException {
+    public static String serialize(final Object object, final CSVFormat csvFormat) throws CsvException, IOException {
         if(object.getClass().isArray()) {
             return serialize0((Object[])object, CSVFormat.DEFAULT);
         }else {
@@ -32,150 +36,101 @@ public class CsvSerializer {
         }
     }
     
-    public static <T extends Iterable<?>> String serialize(final T iterable, Class<?> clazz) throws CsvException {
+    public static <T extends Iterable<?>> String serialize(final T iterable, final Class<?> clazz) throws CsvException, IOException {
         return serialize(iterable, clazz, CSVFormat.DEFAULT);
     }
     
-    public static <T extends Iterable<?>> String serialize(final T iterable, Class<?> clazz, final CSVFormat csvFormat) throws CsvException {
-            return serialize0(iterable, clazz, csvFormat);
+    public static <T extends Iterable<?>> String serialize(final T iterable, final Class<?> clazz, final CSVFormat csvFormat) throws CsvException, IOException {
+        return serialize0(iterable, clazz, csvFormat);
     }
     
-    private static String serialize0(final Object object, final CSVFormat csvFormat) throws CsvException {
-        final Class<?> clazz = object.getClass();
-        CSVPrinter printer;
-        try{
-            printer = new CSVPrinter(new StringBuilder(), csvFormat);
-            Field[] fields = clazz.getDeclaredFields();
-            fields = filterIgnoreProperties(clazz, fields);
-            CsvMetaInfo[] csvMetaInfos = retrieveCsvMetaInfo(clazz, fields);
-            csvMetaInfos = sortCsvMetaInfos(csvMetaInfos);
-            printHeader(printer, csvMetaInfos);
-            printObject(printer, csvMetaInfos, object);
-        }catch (Exception e) {
-            throw new CsvException(e);
-        }
+    private static String serialize0(final Object object, final CSVFormat csvFormat) throws CsvException, IOException {
+        Class<?> clazz = object.getClass();
+        CsvMetaNode[] csvMetaNodes = resolveClass(clazz);
+        CSVPrinter printer = new CSVPrinter(new StringBuilder(), csvFormat);
+        printHeader(printer, csvMetaNodes);
+        printObject(printer, csvMetaNodes, object);
         return printer.getOut().toString();
     }
     
-    private static String serialize0(final Object[] object, final CSVFormat csvFormat) throws CsvException {
-        try{
-            final Class<?> clazz = object.getClass();
-            CSVPrinter printer = new CSVPrinter(new StringBuilder(), csvFormat);
-            Field[] fields = clazz.getDeclaredFields();
-            fields = filterIgnoreProperties(clazz, fields);
-            CsvMetaInfo[] csvMetaInfos = retrieveCsvMetaInfo(clazz, fields);
-            csvMetaInfos = sortCsvMetaInfos(csvMetaInfos);
-            printHeader(printer, csvMetaInfos);
-            printObjects(printer, csvMetaInfos, object);
-            return printer.getOut().toString();
-        }catch (Exception e) {
-            throw new CsvException(e);
-        }
+    private static String serialize0(final Object[] object, final CSVFormat csvFormat) throws CsvException, IOException {
+        Class<?> clazz = object.getClass();
+        CsvMetaNode[] csvMetaNodes = resolveClass(clazz);
+        CSVPrinter printer = new CSVPrinter(new StringBuilder(), csvFormat);
+        printHeader(printer, csvMetaNodes);
+        printObjects(printer, csvMetaNodes, object);
+        return printer.getOut().toString();
     }
     
-    private static <T extends Iterable<?>> String serialize0(final T iterable, final Class<?> clazz, final CSVFormat csvFormat) throws CsvException {
-        try{
-            CSVPrinter printer = new CSVPrinter(new StringBuilder(), csvFormat);
-            Field[] fields = clazz.getDeclaredFields();
-            fields = filterIgnoreProperties(clazz, fields);
-            CsvMetaInfo[] csvMetaInfos = retrieveCsvMetaInfo(clazz, fields);
-            csvMetaInfos = sortCsvMetaInfos(csvMetaInfos);
-            printHeader(printer, csvMetaInfos);
-            printObjects(printer, csvMetaInfos, iterable);
-            return printer.getOut().toString();
-        }catch (Exception e) {
-            throw new CsvException(e);
-        }
+    private static <T extends Iterable<?>> String serialize0(final T iterable, final Class<?> clazz, final CSVFormat csvFormat) throws CsvException, IOException {
+        long start = System.currentTimeMillis();
+        CsvMetaNode[] csvMetaNodes = resolveClass(clazz);
+        long end = System.currentTimeMillis();
+        System.out.println(end - start);
+        start = end;
+        CSVPrinter printer = new CSVPrinter(new StringBuilder(), csvFormat);
+        printHeader(printer, csvMetaNodes);
+        end = System.currentTimeMillis();
+        System.out.println(end - start);
+        start = end;
+        printObjects(printer, csvMetaNodes, iterable);
+        end = System.currentTimeMillis();
+        System.out.println(end - start);
+        start = end;
+        return printer.getOut().toString();
+    }
+    
+    private static CsvMetaNode[] resolveClass(Class<?> clazz) throws CsvException {
+        Field[] fields = clazz.getDeclaredFields();
+        fields = PropertyResolver.filterIgnoreProperties(clazz, fields);
+        CsvMetaTree csvMetaTree = CsvMetaTreeBuilder.buildCsvMetaTree(fields);
+        CsvMetaTreeResolver.scanCsvMetaTree(csvMetaTree);
+        CsvMetaTreeResolver.resolveCsvMetaTree(csvMetaTree);
+        CsvMetaTreeResolver.sortCsvMetaTree(csvMetaTree);
+        CsvMetaNode[] csvMetaNodes = new CsvMetaNode[csvMetaTree.getLeafNodeCount()];
+        Utils.convertCsvMetaTreeIntoArray(csvMetaTree.getRoot(), csvMetaNodes, 0);
+        return csvMetaNodes;
     }
     
     
-    private static void printHeader(final CSVPrinter printer, final CsvMetaInfo[] csvMetaInfos) throws IOException {
-        for (CsvMetaInfo csvMetaInfo : csvMetaInfos) {
-            printer.print(csvMetaInfo.getHeader());
+    private static void printHeader(final CSVPrinter printer, final CsvMetaNode[] csvMetaNodes) throws CsvException, IOException {
+        for (CsvMetaNode csvMetaNode : csvMetaNodes) {
+            CsvMetaNode[] path = CsvMetaTreeResolver.resolveNodePath(csvMetaNode);
+            csvMetaNode.setPath(path);
+            printer.print(csvMetaNode.getCsvMetaInfo().getHeader());
         }
         printer.println();
     }
     
-    private static <T extends Iterable<?>> void printObjects(final CSVPrinter printer, final CsvMetaInfo[] csvMetaInfos, final T collection) throws  ReflectiveOperationException, IOException {
-        for (Object obj : collection) {
-            printObject(printer, csvMetaInfos, obj);
+    private static <T extends Iterable<?>> void printObjects(final CSVPrinter printer, final CsvMetaNode[] csvMetaNodes, final T iterable) throws CsvException, IOException {
+        for (Object obj : iterable) {
+            printObject(printer, csvMetaNodes, obj);
         }
     }
     
-    private static void printObjects(final CSVPrinter printer, final CsvMetaInfo[] csvMetaInfos, final Object[] objs) throws ReflectiveOperationException, IOException {
+    private static void printObjects(final CSVPrinter printer, final CsvMetaNode[] csvMetaNodes, final Object[] objs) throws CsvException, IOException {
         for (Object obj : objs) {
-            printObject(printer, csvMetaInfos, obj);
+            printObject(printer, csvMetaNodes, obj);
         }
     }
     
-    private static void printObject(final CSVPrinter printer, final CsvMetaInfo[] csvMetaInfos, final Object obj) throws ReflectiveOperationException, IOException {
-        for (CsvMetaInfo csvMetaInfo : csvMetaInfos) {
-            Object value = csvMetaInfo.getField().get(obj);
-            Converter converter = csvMetaInfo.getConverter();
-            if(converter != null) {
-                value = converter.convert(value);
-            }
-            printer.print(value);
-        }
-        printer.println();
-    }
-    
-    private static Field[] filterIgnoreProperties(final Class<?> clazz, Field[] arg) throws NoSuchFieldException, SecurityException{
-        if(clazz.isAnnotationPresent(CsvIgnoreProperties.class)) {
-            CsvIgnoreProperties anno =  clazz.getAnnotation(CsvIgnoreProperties.class);
-            String[] ignoreProperties = anno.value();
-            ignoreProperties = Utils.filterRepeatAndEmptyValue(ignoreProperties);
-            Field[] ignoreFields = new Field[ignoreProperties.length];
-            for (int i = 0; i < ignoreProperties.length; i++) {
-                ignoreFields[i] = clazz.getDeclaredField(ignoreProperties[i]);
-            }
-            arg = Utils.filterField(arg, ignoreFields);
-        }
-        
-        Field[] ignoreAnnotatedFields = new Field[arg.length];
-        int length = 0;
-        for (int i = 0; i < arg.length; i++) {
-            Field f = arg[i];
-            if(f.isAnnotationPresent(CsvIgnore.class)) {
-                length ++;
-                ignoreAnnotatedFields[i] = f;
-            }
-        }
-        
-        arg = Utils.filterField(arg, Arrays.copyOf(ignoreAnnotatedFields, length));
-        return arg;
-    }
-
-    private static CsvMetaInfo[] retrieveCsvMetaInfo(final Class<?> clazz, final Field[] arg) throws ReflectiveOperationException {
-        final CsvMetaInfo[] csvMetaInfos = new CsvMetaInfo[arg.length];
-        for (int i = 0; i < arg.length; i++) {
-            final Field f = arg[i];
-            f.setAccessible(true);
-            CsvMetaInfo csvMetaInfo = new CsvMetaInfo(f);
-            if(f.isAnnotationPresent(CsvProperty.class)) {
-                CsvProperty anno = f.getAnnotation(CsvProperty.class);
-                String header = anno.defaultValue().equals(anno.header()) ? f.getName() : anno.header();
-                csvMetaInfo.setHeader(header);
-                int order = anno.order();
-                csvMetaInfo.setOrder(order);
-                Class<? extends Converter> converterClazz = anno.converter();
-                if(converterClazz == DefaultConverter.class) {
-                    //DO_NOTHING
+    private static void printObject(final CSVPrinter printer, final CsvMetaNode[] csvMetaNodes, final Object obj) throws CsvException, IOException {
+        try{
+            for (CsvMetaNode csvMetaNode : csvMetaNodes) {
+                CsvMetaNode[] path = csvMetaNode.getPath();
+                Object value = obj;
+                for (int i = path.length - 1; i >= 0; i--) {
+                    value = path[i].getCsvMetaInfo().getField().get(value);
                 }
-                else {
-                    csvMetaInfo.setConverter(converterClazz.newInstance());
+                Converter converter = csvMetaNode.getCsvMetaInfo().getConverter();
+                if(converter != null) {
+                    value = converter.convert(value);
                 }
+                printer.print(value);
             }
-            csvMetaInfos[i] = csvMetaInfo;
+            printer.println();
+        }catch(IllegalAccessException | IllegalArgumentException e) {
+            throw new CsvException(e);
         }
-        return csvMetaInfos;
     }
-
-    //need optimization
-    private static CsvMetaInfo[] sortCsvMetaInfos(CsvMetaInfo[] csvMetaInfos) {
-        List<CsvMetaInfo> list = Arrays.asList(csvMetaInfos);
-        Collections.sort(list);
-        return list.toArray(new CsvMetaInfo[list.size()]);
-    }
-
 }

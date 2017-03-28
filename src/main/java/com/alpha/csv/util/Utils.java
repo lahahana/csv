@@ -3,6 +3,9 @@ package com.alpha.csv.util;
 import java.lang.reflect.Field;
 import java.util.LinkedHashSet;
 
+import com.alpha.csv.base.CsvMetaInfo;
+import com.alpha.csv.base.CsvMetaNode;
+
 public class Utils {
 
     public static String[] filterRepeatAndEmptyValue(String[] arg0) {
@@ -33,4 +36,41 @@ public class Utils {
             }
         return result;
     }
+    
+    public static CsvMetaNode[] convertFieldsToCsvMetaNodes(CsvMetaNode parent, Field[] fields) {
+        CsvMetaNode[] csvMetaNodes = new CsvMetaNode[fields.length];
+        int childDepth = parent.getDepth() + 1;
+        for (int i = 0; i < fields.length; i++) {
+            CsvMetaInfo csvMetaInfo = new CsvMetaInfo(fields[i]);
+            csvMetaNodes[i] = new CsvMetaNode(csvMetaInfo, parent, null);
+            csvMetaNodes[i].setDepth(childDepth);
+        }
+        return csvMetaNodes;
+    }
+    
+    public static int convertCsvMetaTreeIntoArray(CsvMetaNode csvMetaNode, CsvMetaNode[] nodes, int index) {
+        CsvMetaNode[] childs = csvMetaNode.getChilds();
+        if(childs != null) {
+            for (CsvMetaNode node : childs) {
+               index = convertCsvMetaTreeIntoArray(node, nodes, index++);
+            }
+        }else {
+            nodes[index++] = csvMetaNode;
+        }
+        return index;
+    }
+    
+    public static int countCsvMetaTree(CsvMetaNode csvMetaNode, int count){
+        CsvMetaNode[] childs = csvMetaNode.getChilds();
+        if(childs != null) {
+            for (CsvMetaNode node : childs) {
+                countCsvMetaTree(node, count);
+            }
+        }else {
+            count++;
+        }
+        return count;
+    }
+    
+    
 }
