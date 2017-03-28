@@ -63,20 +63,10 @@ public class CsvSerializer {
     }
     
     private static <T extends Iterable<?>> String serialize0(final T iterable, final Class<?> clazz, final CSVFormat csvFormat) throws CsvException, IOException {
-        long start = System.currentTimeMillis();
         CsvMetaNode[] csvMetaNodes = resolveClass(clazz);
-        long end = System.currentTimeMillis();
-        System.out.println(end - start);
-        start = end;
         CSVPrinter printer = new CSVPrinter(new StringBuilder(), csvFormat);
         printHeader(printer, csvMetaNodes);
-        end = System.currentTimeMillis();
-        System.out.println(end - start);
-        start = end;
         printObjects(printer, csvMetaNodes, iterable);
-        end = System.currentTimeMillis();
-        System.out.println(end - start);
-        start = end;
         return printer.getOut().toString();
     }
     
