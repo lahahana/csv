@@ -3,7 +3,7 @@ package com.alpha.csv.base;
 import java.lang.reflect.Field;
 
 import com.alpha.csv.annotations.CsvProperty;
-import com.alpha.csv.annotations.convertor.Converter;
+import com.alpha.csv.convertor.Converter;
 
 public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
 
@@ -14,7 +14,6 @@ public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
     private int order;
     
     private Converter<?, ?> converter;
-    
     
     public CsvMetaInfo(Field field) {
         super();

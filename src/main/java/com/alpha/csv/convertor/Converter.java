@@ -1,4 +1,4 @@
-package com.alpha.csv.annotations.convertor;
+package com.alpha.csv.convertor;
 
 import com.alpha.csv.annotations.CsvProperty;
 

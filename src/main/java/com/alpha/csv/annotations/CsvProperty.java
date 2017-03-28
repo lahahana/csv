@@ -7,8 +7,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.alpha.csv.annotations.convertor.Converter;
-import com.alpha.csv.annotations.convertor.DefaultConverter;
+import com.alpha.csv.convertor.Converter;
+import com.alpha.csv.convertor.DefaultConverter;
 
 /**
  * This Annotation is used to do customization when serialize property.

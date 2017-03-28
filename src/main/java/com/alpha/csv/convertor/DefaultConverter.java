@@ -1,4 +1,4 @@
-package com.alpha.csv.annotations.convertor;
+package com.alpha.csv.convertor;
 
 /**
  * This class is for internal use only.

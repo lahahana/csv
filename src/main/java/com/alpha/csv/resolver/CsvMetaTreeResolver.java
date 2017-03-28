@@ -5,11 +5,11 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import com.alpha.csv.annotations.CsvProperty;
-import com.alpha.csv.annotations.convertor.Converter;
-import com.alpha.csv.annotations.convertor.DefaultConverter;
 import com.alpha.csv.base.CsvMetaInfo;
 import com.alpha.csv.base.CsvMetaNode;
 import com.alpha.csv.base.CsvMetaTreeBuilder.CsvMetaTree;
+import com.alpha.csv.convertor.Converter;
+import com.alpha.csv.convertor.DefaultConverter;
 import com.alpha.csv.exceptions.CsvException;
 import com.alpha.csv.util.Utils;
 
@@ -29,6 +29,7 @@ public class CsvMetaTreeResolver {
                 }   
                 fields =  PropertyResolver.filterIgnoreProperties(clazz, fields);
                 csvMetaNode.setChilds(Utils.convertFieldsToCsvMetaNodes(csvMetaNode, fields));
+                scanCsvMetaTree0(csvMetaNode);
             }
         }else {
             for (CsvMetaNode node : csvMetaNode.getChilds()) {

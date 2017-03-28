@@ -6,10 +6,10 @@ import java.lang.reflect.Field;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
-import com.alpha.csv.annotations.convertor.Converter;
 import com.alpha.csv.base.CsvMetaNode;
 import com.alpha.csv.base.CsvMetaTreeBuilder;
 import com.alpha.csv.base.CsvMetaTreeBuilder.CsvMetaTree;
+import com.alpha.csv.convertor.Converter;
 import com.alpha.csv.exceptions.CsvException;
 import com.alpha.csv.resolver.CsvMetaTreeResolver;
 import com.alpha.csv.resolver.PropertyResolver;
