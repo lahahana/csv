@@ -1,19 +1,18 @@
-package com.alpha.csv.serialize;
+package com.github.lahahana.csv.serialize;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
-
+import com.github.lahahana.csv.base.CsvMetaNode;
+import com.github.lahahana.csv.base.CsvMetaTreeBuilder;
+import com.github.lahahana.csv.base.CsvMetaTreeBuilder.CsvMetaTree;
+import com.github.lahahana.csv.convertor.Converter;
+import com.github.lahahana.csv.exceptions.CsvException;
+import com.github.lahahana.csv.resolver.CsvMetaTreeResolver;
+import com.github.lahahana.csv.resolver.PropertyResolver;
+import com.github.lahahana.csv.util.Utils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
-import com.alpha.csv.base.CsvMetaNode;
-import com.alpha.csv.base.CsvMetaTreeBuilder;
-import com.alpha.csv.base.CsvMetaTreeBuilder.CsvMetaTree;
-import com.alpha.csv.convertor.Converter;
-import com.alpha.csv.exceptions.CsvException;
-import com.alpha.csv.resolver.CsvMetaTreeResolver;
-import com.alpha.csv.resolver.PropertyResolver;
-import com.alpha.csv.util.Utils;
+import java.io.IOException;
+import java.lang.reflect.Field;
 
 /**
  * Use following method to serialize object:
@@ -119,7 +118,9 @@ public class CsvSerializer {
                 printer.print(value);
             }
             printer.println();
-        }catch(IllegalAccessException | IllegalArgumentException e) {
+        }catch(IllegalAccessException e) {
+            throw new CsvException(e);
+        }catch(IllegalArgumentException e) {
             throw new CsvException(e);
         }
     }

@@ -1,9 +1,9 @@
-package com.alpha.csv.base;
+package com.github.lahahana.csv.base;
+
+import com.github.lahahana.csv.annotations.CsvProperty;
+import com.github.lahahana.csv.convertor.Converter;
 
 import java.lang.reflect.Field;
-
-import com.alpha.csv.annotations.CsvProperty;
-import com.alpha.csv.convertor.Converter;
 
 public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
 
@@ -20,13 +20,6 @@ public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
         this.header = field.getName();
         this.field = field;
         this.order = CsvProperty.DEFAULT_ORDER;
-    }
-
-    public CsvMetaInfo(String value, Field field, int order) {
-        super();
-        this.header = value;
-        this.field = field;
-        this.order = order;
     }
 
     public String getHeader() {

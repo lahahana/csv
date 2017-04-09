@@ -1,14 +1,9 @@
-package com.alpha.csv.annotations;
+package com.github.lahahana.csv.annotations;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.github.lahahana.csv.convertor.Converter;
+import com.github.lahahana.csv.convertor.DefaultConverter;
 
-import com.alpha.csv.convertor.Converter;
-import com.alpha.csv.convertor.DefaultConverter;
+import java.lang.annotation.*;
 
 /**
  * This Annotation is used to do customization when serialize property.
@@ -23,16 +18,16 @@ import com.alpha.csv.convertor.DefaultConverter;
 @Inherited
 public @interface CsvProperty {
     
-    static final String DEFAULT_HEADER = "";
-    
-    static final int DEFAULT_ORDER = Integer.MAX_VALUE;
+    String DEFAULT_HEADER = "";
 
-    static final String DEFAULT_VALUE = "";
+    int DEFAULT_ORDER = Integer.MAX_VALUE;
+
+    String DEFAULT_VALUE = "";
     
 
     /**
      * The CSV header of this properties, 
-     * otherwise, {@link CSVSerializer} will use {@link Field} name as default header 
+     * otherwise, {@link com.github.lahahana.csv.serialize.CsvSerializer} will use {@link java.lang.reflect.Field} name as default header
      * */
     String header() default DEFAULT_HEADER;
     

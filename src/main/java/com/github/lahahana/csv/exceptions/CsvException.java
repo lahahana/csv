@@ -1,4 +1,4 @@
-package com.alpha.csv.exceptions;
+package com.github.lahahana.csv.exceptions;
 
 public class CsvException extends Exception{
 

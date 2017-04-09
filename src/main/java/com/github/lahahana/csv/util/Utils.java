@@ -1,10 +1,10 @@
-package com.alpha.csv.util;
+package com.github.lahahana.csv.util;
 
 import java.lang.reflect.Field;
 import java.util.LinkedHashSet;
 
-import com.alpha.csv.base.CsvMetaInfo;
-import com.alpha.csv.base.CsvMetaNode;
+import com.github.lahahana.csv.base.CsvMetaInfo;
+import com.github.lahahana.csv.base.CsvMetaNode;
 
 public class Utils {
 

@@ -1,17 +1,17 @@
-package com.alpha.csv.resolver;
+package com.github.lahahana.csv.resolver;
+
+import com.github.lahahana.csv.annotations.CsvProperty;
+import com.github.lahahana.csv.base.CsvMetaInfo;
+import com.github.lahahana.csv.base.CsvMetaNode;
+import com.github.lahahana.csv.base.CsvMetaTreeBuilder.CsvMetaTree;
+import com.github.lahahana.csv.convertor.Converter;
+import com.github.lahahana.csv.convertor.DefaultConverter;
+import com.github.lahahana.csv.exceptions.CsvException;
+import com.github.lahahana.csv.util.Utils;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
-
-import com.alpha.csv.annotations.CsvProperty;
-import com.alpha.csv.base.CsvMetaInfo;
-import com.alpha.csv.base.CsvMetaNode;
-import com.alpha.csv.base.CsvMetaTreeBuilder.CsvMetaTree;
-import com.alpha.csv.convertor.Converter;
-import com.alpha.csv.convertor.DefaultConverter;
-import com.alpha.csv.exceptions.CsvException;
-import com.alpha.csv.util.Utils;
 
 public class CsvMetaTreeResolver {
 
@@ -55,7 +55,7 @@ public class CsvMetaTreeResolver {
                 f.setAccessible(true);
                 if(f.isAnnotationPresent(CsvProperty.class)) {
                     CsvProperty anno = f.getAnnotation(CsvProperty.class);
-                    String header = anno.defaultValue().equals(anno.header()) ? f.getName() : anno.header();
+                    String header = CsvProperty.DEFAULT_HEADER.equals(anno.header()) ? f.getName() : anno.header();
                     csvMetaInfo.setHeader(header);
                     int order = anno.order();
                     csvMetaInfo.setOrder(order);
@@ -67,7 +67,7 @@ public class CsvMetaTreeResolver {
             Field f = csvMetaInfo.getField();
             if(f.isAnnotationPresent(CsvProperty.class)) {
                 CsvProperty anno = f.getAnnotation(CsvProperty.class);
-                String header = anno.defaultValue().equals(anno.header()) ? f.getName() : anno.header();
+                String header = CsvProperty.DEFAULT_HEADER.equals(anno.header()) ? f.getName() : anno.header();
                 csvMetaInfo.setHeader(header);
                 int order = anno.order();
                 csvMetaInfo.setOrder(order);

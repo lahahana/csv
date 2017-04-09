@@ -1,4 +1,4 @@
-package com.alpha.csv.base;
+package com.github.lahahana.csv.base;
 
 public class CsvMetaNode implements Comparable<CsvMetaNode>{
 

@@ -1,12 +1,12 @@
-package com.alpha.csv.resolver;
+package com.github.lahahana.csv.resolver;
+
+import com.github.lahahana.csv.annotations.CsvIgnore;
+import com.github.lahahana.csv.annotations.CsvIgnoreProperties;
+import com.github.lahahana.csv.exceptions.CsvException;
+import com.github.lahahana.csv.util.Utils;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
-
-import com.alpha.csv.annotations.CsvIgnore;
-import com.alpha.csv.annotations.CsvIgnoreProperties;
-import com.alpha.csv.exceptions.CsvException;
-import com.alpha.csv.util.Utils;
 
 public class PropertyResolver {
 
