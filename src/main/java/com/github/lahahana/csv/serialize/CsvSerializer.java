@@ -13,6 +13,8 @@ import org.apache.commons.csv.CSVPrinter;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * Use following method to serialize object:
@@ -53,7 +55,7 @@ public class CsvSerializer {
     }
     
     private static String serialize0(final Object[] object, final CSVFormat csvFormat) throws CsvException, IOException {
-        Class<?> clazz = object.getClass();
+        Class<?> clazz = object.getClass().getComponentType();
         CsvMetaNode[] csvMetaNodes = resolveClass(clazz);
         CSVPrinter printer = new CSVPrinter(new StringBuilder(), csvFormat);
         printHeader(printer, csvMetaNodes);
@@ -109,6 +111,34 @@ public class CsvSerializer {
                 CsvMetaNode[] path = csvMetaNode.getPath();
                 Object value = obj;
                 for (int i = path.length - 1; i >= 0; i--) {
+                    if(i == 0) {
+                        Field f = path[i].getCsvMetaInfo().getField();
+                        if(f.getType().isArray()) {
+                            Object[] objects = (Object[])(f.get(value));
+                            StringBuilder builder = new StringBuilder();
+                            for (int j = 0; j < objects.length; j++) {
+                                builder.append(objects[j]);
+                                if(j != objects.length - 1) {
+                                    builder.append(",");
+                                }
+                            }
+                            value =builder.toString();
+                            break;
+                        }else if(f.getType().isAssignableFrom(Collection.class)) {
+                            Collection objects = (Collection)(f.get(value));
+                            StringBuilder builder = new StringBuilder();
+                            Iterator iterator = objects.iterator();
+                            for(;iterator.hasNext();) {
+                                Object e = iterator.next();
+                                builder.append(e);
+                                if(iterator.hasNext()) {
+                                    builder.append(",");
+                                }
+                            }
+                            value = builder.toString();
+                            break;
+                        }
+                    }
                     value = path[i].getCsvMetaInfo().getField().get(value);
                 }
                 Converter converter = csvMetaNode.getCsvMetaInfo().getConverter();

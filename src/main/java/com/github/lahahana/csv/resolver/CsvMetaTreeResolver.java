@@ -48,16 +48,16 @@ public class CsvMetaTreeResolver {
     
     private static void resolveCsvMetaTree0(CsvMetaNode csvMetaNode) throws NoSuchFieldException, SecurityException, InstantiationException, IllegalAccessException {
         if(csvMetaNode.getChilds() != null) {
-            CsvMetaNode[] childs = csvMetaNode.getChilds();
-            for (CsvMetaNode node : childs) {
+            CsvMetaNode[] nodes = csvMetaNode.getChilds();
+            for (CsvMetaNode node : nodes) {
                 CsvMetaInfo csvMetaInfo = node.getCsvMetaInfo();
                 Field f = node.getCsvMetaInfo().getField();
                 f.setAccessible(true);
                 if(f.isAnnotationPresent(CsvProperty.class)) {
-                    CsvProperty anno = f.getAnnotation(CsvProperty.class);
-                    String header = CsvProperty.DEFAULT_HEADER.equals(anno.header()) ? f.getName() : anno.header();
+                    CsvProperty csvProperty = f.getAnnotation(CsvProperty.class);
+                    String header = CsvProperty.DEFAULT_HEADER.equals(csvProperty.header()) ? f.getName() : csvProperty.header();
                     csvMetaInfo.setHeader(header);
-                    int order = anno.order();
+                    int order = csvProperty.order();
                     csvMetaInfo.setOrder(order);
                 }
                 resolveCsvMetaTree0(node);
@@ -66,12 +66,12 @@ public class CsvMetaTreeResolver {
             CsvMetaInfo csvMetaInfo = csvMetaNode.getCsvMetaInfo();
             Field f = csvMetaInfo.getField();
             if(f.isAnnotationPresent(CsvProperty.class)) {
-                CsvProperty anno = f.getAnnotation(CsvProperty.class);
-                String header = CsvProperty.DEFAULT_HEADER.equals(anno.header()) ? f.getName() : anno.header();
+                CsvProperty csvProperty = f.getAnnotation(CsvProperty.class);
+                String header = CsvProperty.DEFAULT_HEADER.equals(csvProperty.header()) ? f.getName() : csvProperty.header();
                 csvMetaInfo.setHeader(header);
-                int order = anno.order();
+                int order = csvProperty.order();
                 csvMetaInfo.setOrder(order);
-                Class<? extends Converter> converterClazz = anno.converter();
+                Class<? extends Converter> converterClazz = csvProperty.converter();
                 if(converterClazz == DefaultConverter.class) {
                     //DO_NOTHING
                 }
@@ -112,11 +112,7 @@ public class CsvMetaTreeResolver {
     
     private static boolean checkIsPrimitiveClass(Class<?> clazz) {
         try{
-            if((clazz.isPrimitive() || clazz == String.class || clazz.getField("TYPE").get(null).getClass().isPrimitive())){
-                return true;
-            }else {
-                return false;
-            }
+            return (clazz.isPrimitive() || clazz == String.class || clazz.getField("TYPE").get(null).getClass().isPrimitive());
         }catch(Exception e) {
             return false;
         }
