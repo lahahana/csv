@@ -77,7 +77,26 @@ public class CsvMetaTreeResolver {
     public static CsvMetaNode[] resolveNodePath(CsvMetaNode csvMetaNode) {
         return resolveNodePath0(csvMetaNode, new CsvMetaNode[csvMetaNode.getDepth()], 0);
     }
-    
+
+    private static void resolveCsvProperty(CsvMetaInfo csvMetaInfo) throws IllegalAccessException, InstantiationException {
+        Field f = csvMetaInfo.getField();
+        f.setAccessible(true);
+        if (f.isAnnotationPresent(CsvProperty.class)) {
+            CsvProperty csvProperty = f.getAnnotation(CsvProperty.class);
+            String header = CsvProperty.DEFAULT_HEADER.equals(csvProperty.header()) ? f.getName() : csvProperty.header();
+            csvMetaInfo.setHeader(header);
+            csvMetaInfo.setDefaultValue(csvProperty.defaultValue());
+            csvMetaInfo.setOrder(csvProperty.order());
+            csvMetaInfo.setPrefix(csvProperty.prefix());
+            Class<? extends Converter> converterClazz = csvProperty.converter();
+            if (converterClazz == DefaultConverter.class) {
+                //DO_NOTHING
+            } else {
+                csvMetaInfo.setConverter(converterClazz.newInstance());
+            }
+        }
+    }
+
     private static CsvMetaNode[] resolveNodePath0(CsvMetaNode csvMetaNode, CsvMetaNode[] path, int index) {
         CsvMetaNode parentNode = csvMetaNode.getParent();
         if (parentNode != null) {
@@ -87,26 +106,6 @@ public class CsvMetaTreeResolver {
         return path;
     }
 
-    private static void resolveCsvProperty(CsvMetaInfo csvMetaInfo) throws IllegalAccessException, InstantiationException {
-        Field f = csvMetaInfo.getField();
-        f.setAccessible(true);
-        if (f.isAnnotationPresent(CsvProperty.class)) {
-            CsvProperty csvProperty = f.getAnnotation(CsvProperty.class);
-            String header = CsvProperty.DEFAULT_HEADER.equals(csvProperty.header()) ? f.getName() : csvProperty.header();
-            csvMetaInfo.setHeader(header);
-            String defaultValue = csvProperty.defaultValue();
-            csvMetaInfo.setDefaultValue(defaultValue);
-            int order = csvProperty.order();
-            csvMetaInfo.setOrder(order);
-            Class<? extends Converter> converterClazz = csvProperty.converter();
-            if (converterClazz == DefaultConverter.class) {
-                //DO_NOTHING
-            } else {
-                csvMetaInfo.setConverter(converterClazz.newInstance());
-            }
-        }
-    }
-    
     
     private static boolean checkIsPrimitiveClass(Class<?> clazz) {
         try{
