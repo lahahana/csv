@@ -107,14 +107,31 @@ public class CsvSerializer {
     
     private static void printObject(final CSVPrinter printer, final CsvMetaNode[] csvMetaNodes, final Object obj) throws CsvException, IOException {
         try{
+            if(obj == null) {
+                for(int i = 0; i < csvMetaNodes.length; i++)
+                    printer.print("");
+                return;
+            }
             for (CsvMetaNode csvMetaNode : csvMetaNodes) {
                 CsvMetaNode[] path = csvMetaNode.getPath();
                 Object value = obj;
+                if(value == null) {
+                    printer.print("");
+                    continue;
+                }
                 for (int i = path.length - 1; i >= 0; i--) {
+                    if(value == null) {
+                        value = "";
+                        break;
+                    }
+                    Field f = path[i].getCsvMetaInfo().getField();
                     if(i == 0) {
-                        Field f = path[i].getCsvMetaInfo().getField();
                         if(f.getType().isArray()) {
                             Object[] objects = (Object[])(f.get(value));
+                            if(objects == null) {
+                                value = "";
+                                break;
+                            }
                             StringBuilder builder = new StringBuilder();
                             for (int j = 0; j < objects.length; j++) {
                                 builder.append(objects[j]);
@@ -126,6 +143,10 @@ public class CsvSerializer {
                             break;
                         }else if(f.getType().isAssignableFrom(Collection.class)) {
                             Collection objects = (Collection)(f.get(value));
+                            if(objects == null) {
+                                value = "";
+                                break;
+                            }
                             StringBuilder builder = new StringBuilder();
                             Iterator iterator = objects.iterator();
                             for(;iterator.hasNext();) {
@@ -139,7 +160,7 @@ public class CsvSerializer {
                             break;
                         }
                     }
-                    value = path[i].getCsvMetaInfo().getField().get(value);
+                    value = f.get(value);
                 }
                 Converter converter = csvMetaNode.getCsvMetaInfo().getConverter();
                 if(converter != null) {
