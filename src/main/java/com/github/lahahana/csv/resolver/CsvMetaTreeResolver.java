@@ -51,34 +51,12 @@ public class CsvMetaTreeResolver {
             CsvMetaNode[] nodes = csvMetaNode.getChilds();
             for (CsvMetaNode node : nodes) {
                 CsvMetaInfo csvMetaInfo = node.getCsvMetaInfo();
-                Field f = node.getCsvMetaInfo().getField();
-                f.setAccessible(true);
-                if(f.isAnnotationPresent(CsvProperty.class)) {
-                    CsvProperty csvProperty = f.getAnnotation(CsvProperty.class);
-                    String header = CsvProperty.DEFAULT_HEADER.equals(csvProperty.header()) ? f.getName() : csvProperty.header();
-                    csvMetaInfo.setHeader(header);
-                    int order = csvProperty.order();
-                    csvMetaInfo.setOrder(order);
-                }
+                resolveCsvProperty(csvMetaInfo);
                 resolveCsvMetaTree0(node);
             }
         }else {
             CsvMetaInfo csvMetaInfo = csvMetaNode.getCsvMetaInfo();
-            Field f = csvMetaInfo.getField();
-            if(f.isAnnotationPresent(CsvProperty.class)) {
-                CsvProperty csvProperty = f.getAnnotation(CsvProperty.class);
-                String header = CsvProperty.DEFAULT_HEADER.equals(csvProperty.header()) ? f.getName() : csvProperty.header();
-                csvMetaInfo.setHeader(header);
-                int order = csvProperty.order();
-                csvMetaInfo.setOrder(order);
-                Class<? extends Converter> converterClazz = csvProperty.converter();
-                if(converterClazz == DefaultConverter.class) {
-                    //DO_NOTHING
-                }
-                else {
-                    csvMetaInfo.setConverter(converterClazz.newInstance());
-                }
-            }
+            resolveCsvProperty(csvMetaInfo);
         }
     }
     
@@ -107,6 +85,26 @@ public class CsvMetaTreeResolver {
             resolveNodePath0(parentNode, path, index);
         }
         return path;
+    }
+
+    private static void resolveCsvProperty(CsvMetaInfo csvMetaInfo) throws IllegalAccessException, InstantiationException {
+        Field f = csvMetaInfo.getField();
+        f.setAccessible(true);
+        if (f.isAnnotationPresent(CsvProperty.class)) {
+            CsvProperty csvProperty = f.getAnnotation(CsvProperty.class);
+            String header = CsvProperty.DEFAULT_HEADER.equals(csvProperty.header()) ? f.getName() : csvProperty.header();
+            csvMetaInfo.setHeader(header);
+            String defaultValue = csvProperty.defaultValue();
+            csvMetaInfo.setDefaultValue(defaultValue);
+            int order = csvProperty.order();
+            csvMetaInfo.setOrder(order);
+            Class<? extends Converter> converterClazz = csvProperty.converter();
+            if (converterClazz == DefaultConverter.class) {
+                //DO_NOTHING
+            } else {
+                csvMetaInfo.setConverter(converterClazz.newInstance());
+            }
+        }
     }
     
     

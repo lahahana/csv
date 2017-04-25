@@ -41,8 +41,11 @@ public @interface CsvProperty {
      * The property converter class, you should implements {@link Converter} if need customization convert
      * */
     Class<? extends Converter<?, ?>> converter() default DefaultConverter.class;
-    
-    
+
+
+    /**
+     * The default property value if property's value is null
+     * */
     String defaultValue() default DEFAULT_VALUE;
     
 }

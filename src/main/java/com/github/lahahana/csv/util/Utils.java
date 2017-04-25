@@ -1,22 +1,23 @@
 package com.github.lahahana.csv.util;
 
-import java.lang.reflect.Field;
-import java.util.LinkedHashSet;
-
 import com.github.lahahana.csv.base.CsvMetaInfo;
 import com.github.lahahana.csv.base.CsvMetaNode;
+
+import java.lang.reflect.Field;
 
 public class Utils {
 
     public static String[] filterRepeatAndEmptyValue(String[] arg0) {
-        LinkedHashSet<String> set = new LinkedHashSet<String>(arg0.length);
+        String[] array = new String[arg0.length];
+        int count = 0;
         for (String str : arg0) {
             if("".equals(str.trim()))
                     continue;
-            set.add(str);
+            array[count++] = str;
         }
-        
-        return set.toArray(new String[set.size()]);
+        String[] array2 = new String[count];
+        System.arraycopy(array, 0, array2, 0, count);
+        return array2;
     }
     
     public static Field[] filterField(Field[] arg0, Field[] arg1) {
@@ -49,9 +50,9 @@ public class Utils {
     }
     
     public static int convertCsvMetaTreeIntoArray(CsvMetaNode csvMetaNode, CsvMetaNode[] nodes, int index) {
-        CsvMetaNode[] childs = csvMetaNode.getChilds();
-        if(childs != null) {
-            for (CsvMetaNode node : childs) {
+        CsvMetaNode[] csvMetaNodes = csvMetaNode.getChilds();
+        if(csvMetaNodes != null) {
+            for (CsvMetaNode node : csvMetaNodes) {
                index = convertCsvMetaTreeIntoArray(node, nodes, index++);
             }
         }else {
@@ -59,18 +60,5 @@ public class Utils {
         }
         return index;
     }
-    
-    public static int countCsvMetaTree(CsvMetaNode csvMetaNode, int count){
-        CsvMetaNode[] childs = csvMetaNode.getChilds();
-        if(childs != null) {
-            for (CsvMetaNode node : childs) {
-                countCsvMetaTree(node, count);
-            }
-        }else {
-            count++;
-        }
-        return count;
-    }
-    
-    
+
 }

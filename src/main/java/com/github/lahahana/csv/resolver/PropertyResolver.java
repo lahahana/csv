@@ -13,8 +13,8 @@ public class PropertyResolver {
     public static Field[] filterIgnoreProperties(final Class<?> clazz, Field[] arg) throws CsvException {
         try{
             if(clazz.isAnnotationPresent(CsvIgnoreProperties.class)) {
-                CsvIgnoreProperties anno =  clazz.getAnnotation(CsvIgnoreProperties.class);
-                String[] ignoreProperties = anno.value();
+                CsvIgnoreProperties csvIgnoreProperties =  clazz.getAnnotation(CsvIgnoreProperties.class);
+                String[] ignoreProperties = csvIgnoreProperties.value();
                 ignoreProperties = Utils.filterRepeatAndEmptyValue(ignoreProperties);
                 Field[] ignoreFields = new Field[ignoreProperties.length];
                 for (int i = 0; i < ignoreProperties.length; i++) {

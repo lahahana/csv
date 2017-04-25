@@ -99,8 +99,8 @@ public class CsvSerializer {
         }
     }
     
-    private static void printObjects(final CSVPrinter printer, final CsvMetaNode[] csvMetaNodes, final Object[] objs) throws CsvException, IOException {
-        for (Object obj : objs) {
+    private static void printObjects(final CSVPrinter printer, final CsvMetaNode[] csvMetaNodes, final Object[] objects) throws CsvException, IOException {
+        for (Object obj : objects) {
             printObject(printer, csvMetaNodes, obj);
         }
     }
@@ -109,19 +109,19 @@ public class CsvSerializer {
         try{
             if(obj == null) {
                 for(int i = 0; i < csvMetaNodes.length; i++)
-                    printer.print("");
+                    printer.print(csvMetaNodes[i].getCsvMetaInfo().getDefaultValue());
                 return;
             }
             for (CsvMetaNode csvMetaNode : csvMetaNodes) {
                 CsvMetaNode[] path = csvMetaNode.getPath();
                 Object value = obj;
                 if(value == null) {
-                    printer.print("");
+                    printer.print(csvMetaNode.getCsvMetaInfo().getDefaultValue());
                     continue;
                 }
                 for (int i = path.length - 1; i >= 0; i--) {
                     if(value == null) {
-                        value = "";
+                        value = csvMetaNode.getCsvMetaInfo().getDefaultValue();
                         break;
                     }
                     Field f = path[i].getCsvMetaInfo().getField();
@@ -129,7 +129,7 @@ public class CsvSerializer {
                         if(f.getType().isArray()) {
                             Object[] objects = (Object[])(f.get(value));
                             if(objects == null) {
-                                value = "";
+                                value = csvMetaNode.getCsvMetaInfo().getDefaultValue();
                                 break;
                             }
                             StringBuilder builder = new StringBuilder();
@@ -144,7 +144,7 @@ public class CsvSerializer {
                         }else if(f.getType().isAssignableFrom(Collection.class)) {
                             Collection objects = (Collection)(f.get(value));
                             if(objects == null) {
-                                value = "";
+                                value = csvMetaNode.getCsvMetaInfo().getDefaultValue();
                                 break;
                             }
                             StringBuilder builder = new StringBuilder();
@@ -160,7 +160,12 @@ public class CsvSerializer {
                             break;
                         }
                     }
+
                     value = f.get(value);
+                    if(value == null) {
+                        value = csvMetaNode.getCsvMetaInfo().getDefaultValue();
+                        break;
+                    }
                 }
                 Converter converter = csvMetaNode.getCsvMetaInfo().getConverter();
                 if(converter != null) {
