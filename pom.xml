@@ -5,7 +5,7 @@
 
     <groupId>com.github.lahahana</groupId>
     <artifactId>csv</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
     <description>annotation based csv serialize tool</description>
 
