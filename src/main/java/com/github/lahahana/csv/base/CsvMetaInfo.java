@@ -16,6 +16,8 @@ public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
     private Converter<?, ?> converter;
 
     private String defaultValue;
+
+    private String prefix;
     
     public CsvMetaInfo(Field field) {
         super();
@@ -62,6 +64,14 @@ public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
 
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
     }
 
     public int compareTo(CsvMetaInfo o) {

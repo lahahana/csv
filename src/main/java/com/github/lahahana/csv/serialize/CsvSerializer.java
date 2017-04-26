@@ -1,5 +1,6 @@
 package com.github.lahahana.csv.serialize;
 
+import com.github.lahahana.csv.annotations.CsvProperty;
 import com.github.lahahana.csv.base.CsvMetaNode;
 import com.github.lahahana.csv.base.CsvMetaTreeBuilder;
 import com.github.lahahana.csv.base.CsvMetaTreeBuilder.CsvMetaTree;
@@ -88,7 +89,16 @@ public class CsvSerializer {
         for (CsvMetaNode csvMetaNode : csvMetaNodes) {
             CsvMetaNode[] path = CsvMetaTreeResolver.resolveNodePath(csvMetaNode);
             csvMetaNode.setPath(path);
-            printer.print(csvMetaNode.getCsvMetaInfo().getHeader());
+            StringBuilder builder = new StringBuilder();
+            for (int i = 1; i < path.length; i++) {
+                String prefix  = path[i].getCsvMetaInfo().getPrefix();
+                if(!CsvProperty.DEFAULT_PREFIX.equals(prefix)) {
+                    builder.append(prefix);
+                    builder.append("_");
+                }
+            }
+            String header = builder.append(csvMetaNode.getCsvMetaInfo().getHeader()).toString();
+            printer.print(header);
         }
         printer.println();
     }

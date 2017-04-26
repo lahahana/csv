@@ -23,6 +23,8 @@ public @interface CsvProperty {
     int DEFAULT_ORDER = Integer.MAX_VALUE;
 
     String DEFAULT_VALUE = "";
+
+    String DEFAULT_PREFIX = "";
     
 
     /**
@@ -47,5 +49,10 @@ public @interface CsvProperty {
      * The default property value if property's value is null
      * */
     String defaultValue() default DEFAULT_VALUE;
+
+    /**
+     * Only have effect when property is not a primitive type, primitive wrapper or String
+     * */
+    String prefix() default DEFAULT_PREFIX;
     
 }
