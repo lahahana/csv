@@ -90,7 +90,7 @@ public class CsvSerializer {
             CsvMetaNode[] path = CsvMetaTreeResolver.resolveNodePath(csvMetaNode);
             csvMetaNode.setPath(path);
             StringBuilder builder = new StringBuilder();
-            for (int i = 1; i < path.length; i++) {
+            for (int i = path.length - 1; i > 0; i--) {
                 String prefix  = path[i].getCsvMetaInfo().getPrefix();
                 if(!CsvProperty.DEFAULT_PREFIX.equals(prefix)) {
                     builder.append(prefix);
@@ -142,6 +142,7 @@ public class CsvSerializer {
                                 value = csvMetaNode.getCsvMetaInfo().getDefaultValue();
                                 break;
                             }
+
                             StringBuilder builder = new StringBuilder();
                             for (int j = 0; j < objects.length; j++) {
                                 builder.append(objects[j]);
