@@ -9,7 +9,10 @@ import java.lang.annotation.Target;
 /**
  * Markable Annotation that can be used to suppress
  * serialization of property
+ * 
+ * @author Lahahana
  */
+
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

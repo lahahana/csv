@@ -1,5 +1,9 @@
 package com.github.lahahana.csv.base;
 
+/**
+ * @author Lahahana
+ * */
+
 public class CsvMetaNode implements Comparable<CsvMetaNode>{
 
     private CsvMetaInfo csvMetaInfo;

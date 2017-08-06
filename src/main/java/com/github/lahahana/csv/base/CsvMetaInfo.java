@@ -1,9 +1,13 @@
 package com.github.lahahana.csv.base;
 
-import com.github.lahahana.csv.annotations.CsvProperty;
-import com.github.lahahana.csv.convertor.Converter;
-
 import java.lang.reflect.Field;
+
+import com.github.lahahana.csv.annotations.CsvProperty;
+import com.github.lahahana.csv.convertor.Convertor;
+
+/**
+ * @author Lahahana
+ * */
 
 public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
 
@@ -13,7 +17,7 @@ public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
     
     private int order;
     
-    private Converter<?, ?> converter;
+    private Convertor<?, String> converter;
 
     private String defaultValue;
 
@@ -50,11 +54,11 @@ public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
         this.order = order;
     }
     
-    public Converter<?, ?> getConverter() {
+    public Convertor<?, ?> getConverter() {
         return converter;
     }
 
-    public void setConverter(Converter<?, ?> converter) {
+    public void setConverter(Convertor<?, String> converter) {
         this.converter = converter;
     }
 

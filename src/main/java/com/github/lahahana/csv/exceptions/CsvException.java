@@ -1,10 +1,11 @@
 package com.github.lahahana.csv.exceptions;
 
-public class CsvException extends Exception{
+/**
+ * @author Lahahana
+ * */
 
-    /**
-     * 
-     */
+public class CsvException extends Exception {
+
     private static final long serialVersionUID = 1L;
 
     public CsvException() {

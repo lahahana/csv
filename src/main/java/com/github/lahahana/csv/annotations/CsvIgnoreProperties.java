@@ -9,8 +9,10 @@ import java.lang.annotation.Target;
 /**
  * Annotation that can be used to either suppress 
  * serialization of properties.
- * 
+ *
+ * @author Lahahana
  */
+
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

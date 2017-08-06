@@ -1,17 +1,21 @@
 package com.github.lahahana.csv.resolver;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collections;
+
 import com.github.lahahana.csv.annotations.CsvProperty;
 import com.github.lahahana.csv.base.CsvMetaInfo;
 import com.github.lahahana.csv.base.CsvMetaNode;
 import com.github.lahahana.csv.base.CsvMetaTreeBuilder.CsvMetaTree;
-import com.github.lahahana.csv.convertor.Converter;
-import com.github.lahahana.csv.convertor.DefaultConverter;
+import com.github.lahahana.csv.convertor.Convertor;
+import com.github.lahahana.csv.convertor.DefaultConvertor;
 import com.github.lahahana.csv.exceptions.CsvException;
 import com.github.lahahana.csv.util.Utils;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collections;
+/**
+ * @author Lahahana
+ * */
 
 public class CsvMetaTreeResolver {
 
@@ -19,10 +23,10 @@ public class CsvMetaTreeResolver {
         scanCsvMetaTree0(csvMetaTree.getRoot());
     }
     
-    private static void scanCsvMetaTree0(CsvMetaNode csvMetaNode) throws CsvException{
+    private static void scanCsvMetaTree0(CsvMetaNode csvMetaNode) throws CsvException {
         if(csvMetaNode.getChilds() == null) {
             Class<?> clazz = csvMetaNode.getCsvMetaInfo().getField().getType();
-            if(!checkIsPrimitiveClass(clazz)) {
+            if(!Utils.isPrimitiveOrWrapper(clazz)) {
                 Field[] fields = clazz.getDeclaredFields();
                 if(fields.length == 0) {
                     return;
@@ -88,8 +92,8 @@ public class CsvMetaTreeResolver {
             csvMetaInfo.setDefaultValue(csvProperty.defaultValue());
             csvMetaInfo.setOrder(csvProperty.order());
             csvMetaInfo.setPrefix(csvProperty.prefix());
-            Class<? extends Converter> converterClazz = csvProperty.converter();
-            if (converterClazz == DefaultConverter.class) {
+            Class<? extends Convertor> converterClazz = csvProperty.converter();
+            if (converterClazz == DefaultConvertor.class) {
                 //DO_NOTHING
             } else {
                 csvMetaInfo.setConverter(converterClazz.newInstance());
@@ -105,13 +109,5 @@ public class CsvMetaTreeResolver {
         }
         return path;
     }
-
     
-    private static boolean checkIsPrimitiveClass(Class<?> clazz) {
-        try{
-            return (clazz.isPrimitive() || clazz == String.class || clazz.getField("TYPE").get(null).getClass().isPrimitive());
-        }catch(Exception e) {
-            return false;
-        }
-    }
 }

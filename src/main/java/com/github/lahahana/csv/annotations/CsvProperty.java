@@ -1,9 +1,16 @@
 package com.github.lahahana.csv.annotations;
 
-import com.github.lahahana.csv.convertor.Converter;
-import com.github.lahahana.csv.convertor.DefaultConverter;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.lang.annotation.*;
+import com.github.lahahana.csv.convertor.Convertor;
+import com.github.lahahana.csv.convertor.DeConvertor;
+import com.github.lahahana.csv.convertor.DefaultConvertor;
+import com.github.lahahana.csv.convertor.DefaultDeConvertor;
 
 /**
  * This Annotation is used to do customization when serialize property.
@@ -11,7 +18,10 @@ import java.lang.annotation.*;
  *                <p>custom CSV header, use {@link #header()}
  *                <p>custom serialization order, use {@link #order()}
  *                <p>custom property convert, use {@link #converter()}
+ * 
+ * @author Lahahana
  */
+
 @Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
@@ -40,10 +50,14 @@ public @interface CsvProperty {
     
     
     /**
-     * The property converter class, you should implements {@link Converter} if need customization convert
+     * The property converter class when serialization, you should implements {@link Convertor} if need customization convert
      * */
-    Class<? extends Converter<?, ?>> converter() default DefaultConverter.class;
-
+    Class<? extends Convertor<?, String>> converter() default DefaultConvertor.class;
+    
+    /**
+     * The property converter class when deserialization , you should implements {@link Convertor} if need customization convert
+     * */
+    Class<? extends DeConvertor<?>> deConvertor() default DefaultDeConvertor.class;
 
     /**
      * The default property value if property's value is null
