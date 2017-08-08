@@ -9,7 +9,7 @@ import com.github.lahahana.csv.base.CsvMetaNode;
 
 public class Utils {
 	
-    private static final Map<Class<?>, Class<?>> primitiveWrapperMap = new HashMap<Class<?>, Class<?>>(8);
+    private static final Map<Class<?>, Class<?>> primitiveWrapperMap = new HashMap<Class<?>, Class<?>>(9);
     
     private static final Map<Class<?>, CsvPrimitiveEnum> primitiveWrapperEnumMap = new HashMap<Class<?>, CsvPrimitiveEnum>(17);
     
@@ -21,6 +21,10 @@ public class Utils {
 
 		CsvPrimitiveEnum(Class<?> clazz) {
 			value = clazz;
+		}
+
+		public Class<?> getValue() {
+			return value;
 		}
     	
     }
@@ -34,6 +38,7 @@ public class Utils {
          primitiveWrapperMap.put(Float.class, Float.TYPE);
          primitiveWrapperMap.put(Long.class, Long.TYPE);
          primitiveWrapperMap.put(Double.class, Double.TYPE);
+         primitiveWrapperMap.put(String.class, String.class);
          
          primitiveWrapperEnumMap.put(Boolean.TYPE, CsvPrimitiveEnum.BOOLEAN);
          primitiveWrapperEnumMap.put(Byte.TYPE, CsvPrimitiveEnum.BYTE);
@@ -56,11 +61,14 @@ public class Utils {
     }
     
     public static boolean isPrimitiveOrWrapper(Class<?> clazz) {
-    	return clazz.isPrimitive() || primitiveWrapperMap.containsKey(clazz) || clazz == String.class;
+    	return clazz.isPrimitive() || primitiveWrapperMap.containsKey(clazz);
     }
     
-    public static Object transform(Class<?> clazz, String value) {
+    public static Object transform(Class<?> clazz, String value) throws IllegalArgumentException {
     	CsvPrimitiveEnum pe = primitiveWrapperEnumMap.get(clazz);
+    	if(pe == null) {
+    		throw new IllegalArgumentException(clazz.getCanonicalName() + " not supported, please implement custom deserialization convertor for this field");
+    	}
     	switch (pe) {
 			case BOOLEAN: return Boolean.parseBoolean(value);
 			case BYTE: return Byte.parseByte(value);

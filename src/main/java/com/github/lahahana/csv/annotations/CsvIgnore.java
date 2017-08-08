@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Markable Annotation that can be used to suppress
+ * Markable annotation that can be used to suppress
  * serialization of property
  * 
  * @author Lahahana

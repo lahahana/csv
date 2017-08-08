@@ -1,6 +1,8 @@
 package com.github.lahahana.csv.base;
 
 /**
+ * An node which contains {@link CsvMetaInfo}, and it's location in {@link CsvMetaTreeBuilder.CsvMetaTree}
+ *  
  * @author Lahahana
  * */
 

@@ -1,6 +1,6 @@
 package com.github.lahahana.csv.convertor;
 
-public class DefaultDeConvertor implements DeConvertor<Object> {
+public class DefaultDeserializationConvertor implements DeserializationConvertor<Object> {
 
 	@Override
 	public Object convert(String value) {

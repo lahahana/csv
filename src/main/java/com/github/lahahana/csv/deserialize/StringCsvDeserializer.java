@@ -10,7 +10,7 @@ import com.github.lahahana.csv.exceptions.CsvException;
 
 public class StringCsvDeserializer<T> extends AbstractCsvDeserializer<T, String> {
 	
-	private static final String UNIX_DELIMITER = "\n";
+	private static final String DELIMITER = "\r\n";
 
 	private String[] rows;
 	
@@ -27,7 +27,7 @@ public class StringCsvDeserializer<T> extends AbstractCsvDeserializer<T, String>
 	@Override
 	protected String tryExtractCsvRow() throws CsvException {
 		if (cursor == 0) {
-			rows = in.split(UNIX_DELIMITER);
+			rows = in.split(DELIMITER);
 			return rows[cursor++];
 		} else if(cursor < rows.length){
 			return rows[cursor++];

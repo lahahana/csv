@@ -3,9 +3,11 @@ package com.github.lahahana.csv.base;
 import java.lang.reflect.Field;
 
 import com.github.lahahana.csv.annotations.CsvProperty;
-import com.github.lahahana.csv.convertor.Convertor;
+import com.github.lahahana.csv.convertor.SerializationConvertor;
 
 /**
+ * {@link CsvMetaInfo} contains all the information of an {@link Field} when do csv serialization
+ * 
  * @author Lahahana
  * */
 
@@ -17,7 +19,7 @@ public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
     
     private int order;
     
-    private Convertor<?, String> converter;
+    private SerializationConvertor<?> converter;
 
     private String defaultValue;
 
@@ -54,11 +56,11 @@ public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
         this.order = order;
     }
     
-    public Convertor<?, ?> getConverter() {
+    public SerializationConvertor<?> getConverter() {
         return converter;
     }
 
-    public void setConverter(Convertor<?, String> converter) {
+    public void setConverter(SerializationConvertor<?> converter) {
         this.converter = converter;
     }
 

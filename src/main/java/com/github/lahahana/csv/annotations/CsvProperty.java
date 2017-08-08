@@ -7,17 +7,20 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.github.lahahana.csv.convertor.Convertor;
-import com.github.lahahana.csv.convertor.DeConvertor;
-import com.github.lahahana.csv.convertor.DefaultConvertor;
-import com.github.lahahana.csv.convertor.DefaultDeConvertor;
+import com.github.lahahana.csv.convertor.DefaultDeserializationConvertor;
+import com.github.lahahana.csv.convertor.DefaultSerializationConvertor;
+import com.github.lahahana.csv.convertor.DeserializationConvertor;
+import com.github.lahahana.csv.convertor.SerializationConvertor;
 
 /**
  * This Annotation is used to do customization when serialize property.
  * <p>Customization:
  *                <p>custom CSV header, use {@link #header()}
  *                <p>custom serialization order, use {@link #order()}
- *                <p>custom property convert, use {@link #converter()}
+ *                <p>custom default value, use {@link #defaultValue()}
+ *                <p>custom property serialization convert, use {@link #serializationConvertor()}
+ *                <p>custom property serialization convert, use {@link #deserializationConvertor()}
+ *                <p>custom prefix, use {@link #prefix()}
  * 
  * @author Lahahana
  */
@@ -50,14 +53,14 @@ public @interface CsvProperty {
     
     
     /**
-     * The property converter class when serialization, you should implements {@link Convertor} if need customization convert
+     * The property converter class when serialization, you should implements {@link SerializationConvertor} if need customization convert
      * */
-    Class<? extends Convertor<?, String>> converter() default DefaultConvertor.class;
+    Class<? extends SerializationConvertor<?>> serializationConvertor() default DefaultSerializationConvertor.class;
     
     /**
-     * The property converter class when deserialization , you should implements {@link Convertor} if need customization convert
+     * The property converter class when deserialization , you should implements {@link DeserializationConvertor} if need customization convert
      * */
-    Class<? extends DeConvertor<?>> deConvertor() default DefaultDeConvertor.class;
+    Class<? extends DeserializationConvertor<?>> deserializationConvertor() default DefaultDeserializationConvertor.class;
 
     /**
      * The default property value if property's value is null

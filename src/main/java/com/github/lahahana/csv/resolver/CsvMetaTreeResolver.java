@@ -8,8 +8,8 @@ import com.github.lahahana.csv.annotations.CsvProperty;
 import com.github.lahahana.csv.base.CsvMetaInfo;
 import com.github.lahahana.csv.base.CsvMetaNode;
 import com.github.lahahana.csv.base.CsvMetaTreeBuilder.CsvMetaTree;
-import com.github.lahahana.csv.convertor.Convertor;
-import com.github.lahahana.csv.convertor.DefaultConvertor;
+import com.github.lahahana.csv.convertor.DefaultSerializationConvertor;
+import com.github.lahahana.csv.convertor.SerializationConvertor;
 import com.github.lahahana.csv.exceptions.CsvException;
 import com.github.lahahana.csv.util.Utils;
 
@@ -92,8 +92,8 @@ public class CsvMetaTreeResolver {
             csvMetaInfo.setDefaultValue(csvProperty.defaultValue());
             csvMetaInfo.setOrder(csvProperty.order());
             csvMetaInfo.setPrefix(csvProperty.prefix());
-            Class<? extends Convertor> converterClazz = csvProperty.converter();
-            if (converterClazz == DefaultConvertor.class) {
+            Class<? extends SerializationConvertor<?>> converterClazz = csvProperty.serializationConvertor();
+            if (converterClazz == DefaultSerializationConvertor.class) {
                 //DO_NOTHING
             } else {
                 csvMetaInfo.setConverter(converterClazz.newInstance());
