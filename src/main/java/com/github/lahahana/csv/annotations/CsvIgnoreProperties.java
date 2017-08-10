@@ -7,8 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation that can be used to either suppress 
- * serialization of properties.
+ * Annotation that can be used to suppress 
+ * serialization/deserialization of properties.
  *
  * @author Lahahana
  */

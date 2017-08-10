@@ -1,71 +1,55 @@
 package com.github.lahahana.csv.deserialize;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.csv.CSVFormat;
 
 import com.github.lahahana.csv.annotations.CsvProperty;
 import com.github.lahahana.csv.base.Tuple;
 import com.github.lahahana.csv.convertor.DefaultDeserializationConvertor;
 import com.github.lahahana.csv.convertor.DeserializationConvertor;
 import com.github.lahahana.csv.exceptions.CsvException;
-import com.github.lahahana.csv.util.Utils;
+import com.github.lahahana.csv.resolver.PropertyResolver;
 
 /**
  * @author Lahahana
  * */
 
-public abstract class AbstractCsvDeserializer<C, I> implements CsvDeserializer<C, I> {
+public abstract class AbstractCsvDeserializer<C> implements CsvDeserializer<C> {
 	
-	private static final int DEFAULT_BUFFER_SIZE = 10 << 10;
+	Map<Integer, String> headerSequenceMap;
 	
-	private Map<Integer, String> headerSequenceMap;
+	Map<String, Tuple<Field, DeserializationConvertor<?>>> headerFieldsMap;
 	
-	private Map<String, Tuple<Field, DeserializationConvertor<?>>> headerFieldsMap;
+	Class<C> clazz; 
 	
-	private Class<C> clazz; 
+	CSVFormat csvFormat;
 	
-	I in;
+	List<C> buffer = new ArrayList<C>(0);
 	
-	private int bufferSize;
-	
-	Object[] buffer;
-	
-	int length;
-	
-	private boolean available = true;
-	
-	public AbstractCsvDeserializer(Class<C> clazz, I in) {
-		super();
+	public AbstractCsvDeserializer(Class<C> clazz, CSVFormat csvFormat) {
 		this.clazz = clazz;
-		this.in = in;
+		this.csvFormat = csvFormat;
 		this.headerFieldsMap = new HashMap<String, Tuple<Field, DeserializationConvertor<?>>>();
 		this.headerSequenceMap = new HashMap<Integer, String>();
-		this.bufferSize = DEFAULT_BUFFER_SIZE;
 	}
-
-	public AbstractCsvDeserializer(Class<C> clazz, I in, int bufferSize) {
-		super();
-		this.clazz = clazz;
-		this.in = in;
-		this.headerFieldsMap = new HashMap<String, Tuple<Field, DeserializationConvertor<?>>>();
-		this.headerSequenceMap = new HashMap<Integer, String>();
-		if(bufferSize < 0) {
-			throw new IllegalArgumentException("buffer size must larger than zero.");
-		}
-		this.bufferSize = bufferSize;
-	}
-
-	public CsvResultSet<C, I> deserialize() throws CsvException {
+	
+	public CsvResultSet<C> deserialize() throws CsvException, IOException {
 		resolveClass();
 		tryExtractCsvHeader();
-		return new CsvResultSet<C, I>(this);
+		return new CsvResultSet<C>(this);
 	}
 
 	protected void resolveClass() throws CsvException {
 		Field[] declaredFields = clazz.getDeclaredFields();
-		for (int i = 0; i < declaredFields.length; i++) {
-			final Field field = declaredFields[i];
+		Field[] csvPropertyField = PropertyResolver.filterIgnoreProperties(clazz, declaredFields);
+		for (int i = 0; i < csvPropertyField.length; i++) {
+			final Field field = csvPropertyField[i];
 			field.setAccessible(true);
 			boolean csvPropertyAnnotated = field.isAnnotationPresent(CsvProperty.class);
 			try{
@@ -88,66 +72,8 @@ public abstract class AbstractCsvDeserializer<C, I> implements CsvDeserializer<C
 		}
 	}
 	
-	protected void tryExtractCsvHeader() throws CsvException {
-		String row = tryExtractCsvRow();
-		String[] headers = row.split(",");
-		for (int i = 0; i < headers.length; i++) {
-			headerSequenceMap.put(i, headers[i]);
-		}
+	protected abstract void  tryExtractCsvHeader() throws IOException;
 	
-	}
-	
-	protected void tryExtractCsvBody() throws CsvException {
-		//reset length to zero for next iteration
-		length = 0;
-		buffer =  new Object[bufferSize];
-		
-		while(available) {
-			if (length == bufferSize) {
-				return;
-			} 
-			String row = tryExtractCsvRow();
-			if (row == null) {
-				//no more data
-				available = false;
-				return;
-			}
-			C  obj = null;
-			try {
-				obj = clazz.newInstance();
-			} catch (InstantiationException e) {
-				throw new RuntimeException(e);
-			} catch (IllegalAccessException e) {
-				throw new RuntimeException("Construct of " + clazz.getName() + "must be public", e);
-			}
-			
-			String[] records = row.split(",");
-			for (int i = 0; i < records.length; i++) {
-				String value = records[i];
-				String header = headerSequenceMap.get(i);
-				if(header != null) {//ignore out of size unknown column
-					Tuple<Field, DeserializationConvertor<?>> tuple = headerFieldsMap.get(header);
-					Field field = tuple.getE1();
-					if(field != null) {//ignore unspecified column
-						DeserializationConvertor<?> convertor = tuple.getE2();
-						try {
-							if(convertor.getClass() != DefaultDeserializationConvertor.class) {
-								field.set(obj, convertor.convert(value));
-							} else {
-								Object result = Utils.transform(field.getType(), value);
-								field.set(obj, result);
-							}
-						} catch(IllegalAccessException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				}
-			}
-			buffer[length++] = obj;
-		}
-	
-	}
-	
-	protected abstract String tryExtractCsvRow() throws CsvException;
+	protected abstract void tryExtractCsvBody() throws CsvException, IOException;
 	
 }

@@ -1,6 +1,6 @@
 package com.github.lahahana.csv.deserialize;
 
-import java.util.Arrays;
+import java.io.IOException;
 import java.util.List;
 
 import com.github.lahahana.csv.exceptions.CsvException;
@@ -9,12 +9,12 @@ import com.github.lahahana.csv.exceptions.CsvException;
  * @author Lahahana
  * */
 
-public class CsvResultSet<C, I> {
+public class CsvResultSet<C> {
 	
-	private AbstractCsvDeserializer<C, I> abstractCsvDeserializer;
+	private AbstractCsvDeserializer<C> absttactCsvDeserializer;
 	
-	CsvResultSet(AbstractCsvDeserializer<C, I> abstractCsvDeserializer) {
-		this.abstractCsvDeserializer = abstractCsvDeserializer;
+	CsvResultSet(AbstractCsvDeserializer<C> absttactCsvDeserializer) {
+		this.absttactCsvDeserializer = absttactCsvDeserializer;
 	}
 
 	/**
@@ -26,12 +26,13 @@ public class CsvResultSet<C, I> {
 	 * }
      * </pre>
      * </blockquote>
-	 * @return target deserialized object array, or null if there is not data for deserialization
+	 * @return target deserialized object list, or null if there is not data for deserialization
+	 * @throws IOException 
+	 * @throws CsvException 
 	 */
-	@SuppressWarnings("unchecked")
-	public List<C> next() throws CsvException {
-		abstractCsvDeserializer.tryExtractCsvBody();
-		List<C> bufferList = Arrays.asList((C[])abstractCsvDeserializer.buffer).subList(0, abstractCsvDeserializer.length);
-		return (abstractCsvDeserializer.length == 0 ? null : bufferList);
+	public List<C> next() throws CsvException, IOException {
+		absttactCsvDeserializer.tryExtractCsvBody();
+		List<C> bufferList = absttactCsvDeserializer.buffer.subList(0, absttactCsvDeserializer.buffer.size());
+		return (bufferList.size() == 0 ? null : bufferList);
 	}
 }

@@ -9,19 +9,14 @@ import org.apache.commons.csv.CSVPrinter;
 
 import com.github.lahahana.csv.base.CsvMetaNode;
 import com.github.lahahana.csv.exceptions.CsvException;
+import com.github.lahahana.csv.serialize.CsvSerializer.Builder;
 
 public class StringCsvSerializer {
 	
 	private InnerStringCsvSerializer delegate;
 	
-	private StringBuilder proxyOut = new StringBuilder();
-	
-	public StringCsvSerializer() throws IOException {
-		this.delegate = new InnerStringCsvSerializer(proxyOut);
-	}
-
-	public StringCsvSerializer(CSVFormat csvFormat) throws IOException {
-		this.delegate = new InnerStringCsvSerializer(proxyOut, csvFormat);
+	public StringCsvSerializer(Builder builder) throws IOException {
+		this.delegate = new InnerStringCsvSerializer(builder);
 	}
 
 	public <T> String serialize(final T object) throws CsvException, IOException {
@@ -41,18 +36,14 @@ public class StringCsvSerializer {
 	
 	private class InnerStringCsvSerializer extends CsvSerializer {
 		
-		public InnerStringCsvSerializer(StringBuilder out) throws IOException {
-			super(out);
+		private static final int THRESHOLD = 10000;
+		
+		InnerStringCsvSerializer(StringCsvSerializer.Builder builder) throws IOException {
+			super(new Builder(builder.out).csvFormat(builder.csvFormat));
 		}
 		
-		public InnerStringCsvSerializer(StringBuilder out, CSVFormat csvFormat) throws IOException {
-			super(out, csvFormat);
-		}
-
-		private static final int THRESHOLD = 10000;
-
 		@Override
-		protected <T> void printObjects(CsvMetaNode[] csvMetaNodes, Iterable<T> iterable)
+		protected <T> void printObjects(CsvMetaNode<?>[] csvMetaNodes, Iterable<T> iterable)
 				throws CsvException, IOException {
 			int count = 0;
 			int totalLength = ((Collection<T>)iterable).size();
@@ -62,25 +53,14 @@ public class StringCsvSerializer {
 					StringBuilder out2 = new StringBuilder(predictLength);
 					out2.append(out.toString());
 					out = out2;
-					try {
-						Field outField = InnerStringCsvSerializer.class.getField("out");
-						outField.set(this, out2);
-					} catch (SecurityException e) {
-						e.printStackTrace();
-					} catch (NoSuchFieldException e) {
-						e.printStackTrace();
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
-					}
+					updateFieldOfCSVPrinter();
 				} 
 				printObject(csvMetaNodes, obj);
 			}
 		}
 
 		@Override
-		protected void printObjects(CsvMetaNode[] csvMetaNodes, Object[] objects)
+		protected <T> void printObjects(CsvMetaNode<?>[] csvMetaNodes, T[] objects)
 				throws CsvException, IOException {
 			for (int i = 0; i < objects.length; i++) {
 				if(i == THRESHOLD) {
@@ -89,19 +69,7 @@ public class StringCsvSerializer {
 					StringBuilder out2 = new StringBuilder(predictLength);
 					out2.append(out.toString());
 					out = out2;
-					try {
-						Field outField = CSVPrinter.class.getDeclaredField("out");
-						outField.setAccessible(true);
-						outField.set(this.csvPrinter, out2);
-					} catch (SecurityException e) {
-						e.printStackTrace();
-					} catch (NoSuchFieldException e) {
-						e.printStackTrace();
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
-					}
+					updateFieldOfCSVPrinter();
 				}
 				printObject(csvMetaNodes, objects[i]);
 			}
@@ -109,6 +77,33 @@ public class StringCsvSerializer {
 		
 		String getResult() {
 			return ((StringBuilder)out).toString();
+		}
+		
+		private void updateFieldOfCSVPrinter() {
+			try {
+				Field outField = CSVPrinter.class.getDeclaredField("out");
+				outField.setAccessible(true);
+				outField.set(this.csvPrinter, out);
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			} catch (NoSuchFieldException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public static final class Builder {
+		Appendable out = new StringBuilder();
+		CSVFormat csvFormat = CSVFormat.DEFAULT;
+		
+		public Builder() {
+			super();
+		}
+		
+		public StringCsvSerializer build() throws IOException {
+			return new StringCsvSerializer(this);
 		}
 	}
 

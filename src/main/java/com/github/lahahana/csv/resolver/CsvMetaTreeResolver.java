@@ -23,7 +23,7 @@ public class CsvMetaTreeResolver {
         scanCsvMetaTree0(csvMetaTree.getRoot());
     }
     
-    private static void scanCsvMetaTree0(CsvMetaNode csvMetaNode) throws CsvException {
+    private static <T> void scanCsvMetaTree0(CsvMetaNode<T> csvMetaNode) throws CsvException {
         if(csvMetaNode.getChilds() == null) {
             Class<?> clazz = csvMetaNode.getCsvMetaInfo().getField().getType();
             if(!Utils.isPrimitiveOrWrapper(clazz)) {
@@ -36,7 +36,7 @@ public class CsvMetaTreeResolver {
                 scanCsvMetaTree0(csvMetaNode);
             }
         }else {
-            for (CsvMetaNode node : csvMetaNode.getChilds()) {
+            for (CsvMetaNode<?> node : csvMetaNode.getChilds()) {
                 scanCsvMetaTree0(node);
             }
         }
@@ -50,16 +50,16 @@ public class CsvMetaTreeResolver {
         }
     }
     
-    private static void resolveCsvMetaTree0(CsvMetaNode csvMetaNode) throws NoSuchFieldException, SecurityException, InstantiationException, IllegalAccessException {
+    private static <T> void resolveCsvMetaTree0(CsvMetaNode<T> csvMetaNode) throws NoSuchFieldException, SecurityException, InstantiationException, IllegalAccessException {
         if(csvMetaNode.getChilds() != null) {
-            CsvMetaNode[] nodes = csvMetaNode.getChilds();
-            for (CsvMetaNode node : nodes) {
-                CsvMetaInfo csvMetaInfo = node.getCsvMetaInfo();
+            CsvMetaNode<?>[] nodes = csvMetaNode.getChilds();
+            for (CsvMetaNode<?> node : nodes) {
+                CsvMetaInfo<?> csvMetaInfo = node.getCsvMetaInfo();
                 resolveCsvProperty(csvMetaInfo);
                 resolveCsvMetaTree0(node);
             }
         }else {
-            CsvMetaInfo csvMetaInfo = csvMetaNode.getCsvMetaInfo();
+            CsvMetaInfo<T> csvMetaInfo = csvMetaNode.getCsvMetaInfo();
             resolveCsvProperty(csvMetaInfo);
         }
     }
@@ -68,21 +68,22 @@ public class CsvMetaTreeResolver {
         sortCsvMetaTree0(csvMetaTree.getRoot());
     }
     
-    private static void sortCsvMetaTree0(CsvMetaNode csvMetaNode) {
-        CsvMetaNode[] csvMetaNodes = csvMetaNode.getChilds();
+    private static void sortCsvMetaTree0(CsvMetaNode<?> csvMetaNode) {
+        CsvMetaNode<?>[] csvMetaNodes = csvMetaNode.getChilds();
         if(csvMetaNodes != null) {
             Collections.sort(Arrays.asList(csvMetaNodes));
-            for (CsvMetaNode csvMetaNode2 : csvMetaNodes) {
+            for (CsvMetaNode<?> csvMetaNode2 : csvMetaNodes) {
                 sortCsvMetaTree0(csvMetaNode2);
             }
         }
     }
     
-    public static CsvMetaNode[] resolveNodePath(CsvMetaNode csvMetaNode) {
+    public static CsvMetaNode<?>[] resolveNodePath(CsvMetaNode<?> csvMetaNode) {
         return resolveNodePath0(csvMetaNode, new CsvMetaNode[csvMetaNode.getDepth()], 0);
     }
 
-    private static void resolveCsvProperty(CsvMetaInfo csvMetaInfo) throws IllegalAccessException, InstantiationException {
+    @SuppressWarnings("unchecked")
+	private static <T> void resolveCsvProperty(CsvMetaInfo<T> csvMetaInfo) throws IllegalAccessException, InstantiationException {
         Field f = csvMetaInfo.getField();
         f.setAccessible(true);
         if (f.isAnnotationPresent(CsvProperty.class)) {
@@ -96,13 +97,13 @@ public class CsvMetaTreeResolver {
             if (converterClazz == DefaultSerializationConvertor.class) {
                 //DO_NOTHING
             } else {
-                csvMetaInfo.setConverter(converterClazz.newInstance());
+                csvMetaInfo.setConverter((SerializationConvertor<T>) converterClazz.newInstance());
             }
         }
     }
 
-    private static CsvMetaNode[] resolveNodePath0(CsvMetaNode csvMetaNode, CsvMetaNode[] path, int index) {
-        CsvMetaNode parentNode = csvMetaNode.getParent();
+    private static CsvMetaNode<?>[] resolveNodePath0(CsvMetaNode<?> csvMetaNode, CsvMetaNode<?>[] path, int index) {
+        CsvMetaNode<?> parentNode = csvMetaNode.getParent();
         if (parentNode != null) {
             path[index ++] = csvMetaNode;
             resolveNodePath0(parentNode, path, index);

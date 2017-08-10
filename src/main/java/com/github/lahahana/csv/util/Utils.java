@@ -17,16 +17,7 @@ public class Utils {
     	BOOLEAN(Boolean.class), BYTE(Byte.class), CHARACTER(Character.class), SHORT(Short.class), 
     	INTEGER(Integer.class), FLOAT(Float.class), DOUBLE(Double.class), LONG(Long.class), STRING(String.class);
     	
-    	private Class<?> value;
-
-		CsvPrimitiveEnum(Class<?> clazz) {
-			value = clazz;
-		}
-
-		public Class<?> getValue() {
-			return value;
-		}
-    	
+		CsvPrimitiveEnum(Class<?> clazz) {}
     }
     
     static {
@@ -65,11 +56,11 @@ public class Utils {
     }
     
     public static Object transform(Class<?> clazz, String value) throws IllegalArgumentException {
-    	CsvPrimitiveEnum pe = primitiveWrapperEnumMap.get(clazz);
-    	if(pe == null) {
-    		throw new IllegalArgumentException(clazz.getCanonicalName() + " not supported, please implement custom deserialization convertor for this field");
+    	CsvPrimitiveEnum csvPrimitiveEnum = primitiveWrapperEnumMap.get(clazz);
+    	if(csvPrimitiveEnum == null) {
+    		throw new IllegalArgumentException("value:" + value + "," + clazz.getCanonicalName() + " not supported, please implement custom deserialization convertor for this field");
     	}
-    	switch (pe) {
+    	switch (csvPrimitiveEnum) {
 			case BOOLEAN: return Boolean.parseBoolean(value);
 			case BYTE: return Byte.parseByte(value);
 			case CHARACTER: return value.charAt(0);
@@ -114,21 +105,20 @@ public class Utils {
         return result;
     }
     
-    public static CsvMetaNode[] convertFieldsToCsvMetaNodes(CsvMetaNode parent, Field[] fields) {
-        CsvMetaNode[] csvMetaNodes = new CsvMetaNode[fields.length];
-        int childDepth = parent.getDepth() + 1;
+    public static <T> CsvMetaNode<?>[] convertFieldsToCsvMetaNodes(CsvMetaNode<T> csvMetaNode, Field[] fields) {
+        CsvMetaNode<?>[] csvMetaNodes = new CsvMetaNode<?>[fields.length];
+        int childDepth = csvMetaNode.getDepth() + 1;
         for (int i = 0; i < fields.length; i++) {
-            CsvMetaInfo csvMetaInfo = new CsvMetaInfo(fields[i]);
-            csvMetaNodes[i] = new CsvMetaNode(csvMetaInfo, parent, null);
-            csvMetaNodes[i].setDepth(childDepth);
+            CsvMetaInfo<Object> csvMetaInfo = new CsvMetaInfo<Object>(fields[i]);
+            csvMetaNodes[i] = new CsvMetaNode<Object>(csvMetaInfo, csvMetaNode, null, childDepth);
         }
         return csvMetaNodes;
     }
     
-    public static int convertCsvMetaTreeIntoArray(CsvMetaNode csvMetaNode, CsvMetaNode[] nodes, int index) {
-        CsvMetaNode[] csvMetaNodes = csvMetaNode.getChilds();
+    public static int convertCsvMetaTreeIntoArray(CsvMetaNode<?> csvMetaNode, CsvMetaNode<?>[] nodes, int index) {
+        CsvMetaNode<?>[] csvMetaNodes = csvMetaNode.getChilds();
         if(csvMetaNodes != null) {
-            for (CsvMetaNode node : csvMetaNodes) {
+            for (CsvMetaNode<?> node : csvMetaNodes) {
                index = convertCsvMetaTreeIntoArray(node, nodes, index++);
             }
         }else {
