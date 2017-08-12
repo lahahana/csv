@@ -20,12 +20,12 @@ import com.github.lahahana.csv.util.Utils;
 
 /**
  * This class use {@link Reader} as source of CSV data
- * Example Code:</br>
+ * Example Code:
  * <blockquote>
  * <pre>
  * FileReader in = new FileReader("D:\\data.csv");
- * CsvDeserializer<Student, Reader> deserializer = new ReaderCsvDeserializer<Student>(Student.class, in);
- * CsvResultSet<Student, Reader> csvResultSet = deserializer.deserialize();
+ * CsvDeserializer<Student> deserializer = new StreamCsvDeserializer.Builder<Student, Reader>(Student.class, in).build();
+ * CsvResultSet<Student> csvResultSet = deserializer.deserialize();
  * List<Student> students = null;
  * while((students = csvResultSet.next()) != null) {
  *		....

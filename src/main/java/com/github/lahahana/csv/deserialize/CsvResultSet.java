@@ -26,9 +26,10 @@ public class CsvResultSet<C> {
 	 * }
      * </pre>
      * </blockquote>
+     * 
+     * @throws IOException 
+     * @throws CsvException 
 	 * @return target deserialized object list, or null if there is not data for deserialization
-	 * @throws IOException 
-	 * @throws CsvException 
 	 */
 	public List<C> next() throws CsvException, IOException {
 		absttactCsvDeserializer.tryExtractCsvBody();

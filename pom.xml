@@ -35,6 +35,25 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.0.2</version>
             </plugin>
+            <plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-javadoc-plugin</artifactId>
+			    <version>2.10.3</version>
+			        <executions>
+			            <execution>
+			                <id>attach-javadocs</id>
+			                <phase>install</phase>
+			                    <goals>
+			                        <goal>jar</goal>
+			                    </goals>
+			                </execution>
+			            </executions>
+			        <configuration>
+			        <encoding>UTF-8</encoding>
+			        <charset>UTF-8</charset>
+			        <additionalparam>-Xdoclint:none</additionalparam>
+			    </configuration>
+			 </plugin>
         </plugins>
     </build>
 
