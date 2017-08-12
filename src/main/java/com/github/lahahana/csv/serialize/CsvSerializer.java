@@ -25,15 +25,11 @@ import com.github.lahahana.csv.util.Utils;
  * <p>
  * {@link #serialize(Object)}
  * <p>
- * {@link #serialize(Object, CSVFormat)}
- * <p>
- * {@link #serialize(Object[], Class)}
- * <p>
- * {@link #serialize(Object[], Class, CSVFormat)}
+ * {@link #serialize(Object[])}
  * <p>
  * {@link #serialize(Iterable, Class)}
  * <p>
- * {@link #serialize(Iterable, Class, CSVFormat)}
+ * {@link #serialize(Iterable, Class)}
  * 
  * @author Lahahana
  */

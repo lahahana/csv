@@ -27,8 +27,8 @@ public class CsvResultSet<C> {
      * </pre>
      * </blockquote>
      * 
-     * @throws IOException 
-     * @throws CsvException 
+     * @exception IOException if error occur when io
+     * @exception CsvException if any other exceptions occur
 	 * @return target deserialized object list, or null if there is not data for deserialization
 	 */
 	public List<C> next() throws CsvException, IOException {
