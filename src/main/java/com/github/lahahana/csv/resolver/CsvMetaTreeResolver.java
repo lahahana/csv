@@ -74,7 +74,7 @@ public class CsvMetaTreeResolver {
     }
     
     private static void sortCsvMetaTree0(CsvMetaNode<?> csvMetaNode) {
-        CsvMetaNode<?>[] csvMetaNodes = csvMetaNode.getChilds();
+        CsvMetaNode[] csvMetaNodes = csvMetaNode.getChilds();
         if(csvMetaNodes != null) {
             Collections.sort(Arrays.asList(csvMetaNodes));
             for (CsvMetaNode<?> csvMetaNode2 : csvMetaNodes) {
