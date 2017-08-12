@@ -1,11 +1,21 @@
 package com.github.lahahana.csv.base;
 
-import com.github.lahahana.csv.annotations.CsvProperty;
-import com.github.lahahana.csv.convertor.Converter;
-
 import java.lang.reflect.Field;
 
-public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
+import com.github.lahahana.csv.annotations.CsvProperty;
+import com.github.lahahana.csv.convertor.SerializationConvertor;
+
+/**
+ * {@link CsvMetaInfo} contains all the information of an {@link Field} when do csv serialization
+ * 
+ * @author Lahahana
+ * */
+
+public class CsvMetaInfo<T> implements Comparable<CsvMetaInfo<T>>{
+	
+	private static final String DEFAULT_PREFIX = CsvProperty.DEFAULT_PREFIX;
+	
+	private static final int DEFAULT_ORDER = CsvProperty.DEFAULT_ORDER;
 
     private String header;
     
@@ -13,7 +23,7 @@ public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
     
     private int order;
     
-    private Converter<?, ?> converter;
+    private SerializationConvertor<T> convertor;
 
     private String defaultValue;
 
@@ -23,7 +33,8 @@ public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
         super();
         this.header = field.getName();
         this.field = field;
-        this.order = CsvProperty.DEFAULT_ORDER;
+        this.order = DEFAULT_ORDER;
+        this.prefix = DEFAULT_PREFIX;
     }
 
     public String getHeader() {
@@ -50,12 +61,12 @@ public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
         this.order = order;
     }
     
-    public Converter<?, ?> getConverter() {
-        return converter;
+    public SerializationConvertor<T> getConvertor() {
+        return convertor;
     }
 
-    public void setConverter(Converter<?, ?> converter) {
-        this.converter = converter;
+    public void setConverter(SerializationConvertor<T> convertor) {
+        this.convertor = convertor;
     }
 
     public String getDefaultValue() {
@@ -74,7 +85,7 @@ public class CsvMetaInfo implements Comparable<CsvMetaInfo>{
         this.prefix = prefix;
     }
 
-    public int compareTo(CsvMetaInfo o) {
+    public int compareTo(CsvMetaInfo<T> o) {
         return order -  o.getOrder();
     }
     

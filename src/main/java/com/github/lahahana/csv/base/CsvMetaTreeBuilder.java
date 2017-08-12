@@ -1,8 +1,12 @@
 package com.github.lahahana.csv.base;
 
+import java.lang.reflect.Field;
+
 import com.github.lahahana.csv.util.Utils;
 
-import java.lang.reflect.Field;
+/**
+ * @author Lahahana
+ * */
 
 public class CsvMetaTreeBuilder {
 
@@ -13,14 +17,14 @@ public class CsvMetaTreeBuilder {
     }
     
     public static class CsvMetaTree {
-        private final CsvMetaNode root;
+        private final CsvMetaNode<Object> root;
 
         public CsvMetaTree() {
             super();
-            this.root = new CsvMetaNode(null, null, null);
+            this.root = new CsvMetaNode<Object>(null, null, null);
         }
 
-        public CsvMetaNode getRoot() {
+        public CsvMetaNode<?> getRoot() {
             return root;
         }
         
@@ -28,11 +32,11 @@ public class CsvMetaTreeBuilder {
             return count(root, 1);
         }
         
-        private int count(CsvMetaNode csvMetaNode, int count) {
-            CsvMetaNode[] csvMetaNodes = csvMetaNode.getChilds();
+        private int count(CsvMetaNode<?> csvMetaNode, int count) {
+            CsvMetaNode<?>[] csvMetaNodes = csvMetaNode.getChilds();
             if(csvMetaNodes != null) {
                 count += csvMetaNodes.length - 1;
-                for (CsvMetaNode node : csvMetaNodes) {
+                for (CsvMetaNode<?> node : csvMetaNodes) {
                     count = count(node, count);
                 }
             }

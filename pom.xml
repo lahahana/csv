@@ -5,23 +5,15 @@
 
     <groupId>com.github.lahahana</groupId>
     <artifactId>csv</artifactId>
-    <version>1.0.2</version>
+    <version>2.0.1</version>
     <packaging>jar</packaging>
-    <description>annotation based csv serialize tool</description>
+    <description>annotation based csv serialize/deserialization tool</description>
 
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
         <version>7</version>
     </parent>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-            <version>1.4</version>
-        </dependency>
-    </dependencies>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

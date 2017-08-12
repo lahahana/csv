@@ -1,194 +1,263 @@
 package com.github.lahahana.csv.serialize;
 
-import com.github.lahahana.csv.annotations.CsvProperty;
-import com.github.lahahana.csv.base.CsvMetaNode;
-import com.github.lahahana.csv.base.CsvMetaTreeBuilder;
-import com.github.lahahana.csv.base.CsvMetaTreeBuilder.CsvMetaTree;
-import com.github.lahahana.csv.convertor.Converter;
-import com.github.lahahana.csv.exceptions.CsvException;
-import com.github.lahahana.csv.resolver.CsvMetaTreeResolver;
-import com.github.lahahana.csv.resolver.PropertyResolver;
-import com.github.lahahana.csv.util.Utils;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-
+import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+
+import com.github.lahahana.csv.annotations.CsvProperty;
+import com.github.lahahana.csv.base.CsvMetaInfo;
+import com.github.lahahana.csv.base.CsvMetaNode;
+import com.github.lahahana.csv.base.CsvMetaTreeBuilder;
+import com.github.lahahana.csv.base.CsvMetaTreeBuilder.CsvMetaTree;
+import com.github.lahahana.csv.convertor.SerializationConvertor;
+import com.github.lahahana.csv.exceptions.CsvException;
+import com.github.lahahana.csv.resolver.CsvMetaTreeResolver;
+import com.github.lahahana.csv.resolver.PropertyResolver;
+import com.github.lahahana.csv.util.Utils;
+
 /**
  * Use following method to serialize object:
- * <p>{@link #serialize(Object)}
- * <p>{@link #serialize(Object, CSVFormat)}
- * <p>{@link #serialize(Iterable, Class)}
- * <p>{@link #serialize(Iterable, Class, CSVFormat)}
- * */
-public class CsvSerializer {
-    
-    public static String serialize(final Object object) throws CsvException, IOException {
-        return serialize(object, CSVFormat.DEFAULT);
-    }
+ * <p>
+ * {@link #serialize(Object)}
+ * <p>
+ * {@link #serialize(Object, CSVFormat)}
+ * <p>
+ * {@link #serialize(Object[], Class)}
+ * <p>
+ * {@link #serialize(Object[], Class, CSVFormat)}
+ * <p>
+ * {@link #serialize(Iterable, Class)}
+ * <p>
+ * {@link #serialize(Iterable, Class, CSVFormat)}
+ * 
+ * @author Lahahana
+ */
+public class CsvSerializer implements Closeable {
+	
+	private static final String ARRAY_DELIMITER = ",";
+	
+	private static final String HEADER_DELIMITER = "_";
+	
+	private int flushThreshold;
+	
+	private Class<?> clazz;
+	
+	private CSVFormat csvFormat;
+	
+	Appendable out;
+	
+	CSVPrinter csvPrinter;
+	
+	CsvSerializer(Builder builder) throws IOException {
+		this.out = builder.out;
+		this.csvFormat = builder.csvFormat;
+		this.csvPrinter = new CSVPrinter(this.out, this.csvFormat);
+		this.flushThreshold = builder.flushThreshold;
+	}
 
-    public static String serialize(final Object object, final CSVFormat csvFormat) throws CsvException, IOException {
-        if(object.getClass().isArray()) {
-            return serialize0((Object[])object, CSVFormat.DEFAULT);
-        }else {
-            return serialize0(object, CSVFormat.DEFAULT);
-        }
-    }
-    
-    public static <T extends Iterable<?>> String serialize(final T iterable, final Class<?> clazz) throws CsvException, IOException {
-        return serialize(iterable, clazz, CSVFormat.DEFAULT);
-    }
-    
-    public static <T extends Iterable<?>> String serialize(final T iterable, final Class<?> clazz, final CSVFormat csvFormat) throws CsvException, IOException {
-        return serialize0(iterable, clazz, csvFormat);
-    }
-    
-    private static String serialize0(final Object object, final CSVFormat csvFormat) throws CsvException, IOException {
-        Class<?> clazz = object.getClass();
-        CsvMetaNode[] csvMetaNodes = resolveClass(clazz);
-        CSVPrinter printer = new CSVPrinter(new StringBuilder(), csvFormat);
-        printHeader(printer, csvMetaNodes);
-        printObject(printer, csvMetaNodes, object);
-        return printer.getOut().toString();
-    }
-    
-    private static String serialize0(final Object[] object, final CSVFormat csvFormat) throws CsvException, IOException {
-        Class<?> clazz = object.getClass().getComponentType();
-        CsvMetaNode[] csvMetaNodes = resolveClass(clazz);
-        CSVPrinter printer = new CSVPrinter(new StringBuilder(), csvFormat);
-        printHeader(printer, csvMetaNodes);
-        printObjects(printer, csvMetaNodes, object);
-        return printer.getOut().toString();
-    }
-    
-    private static <T extends Iterable<?>> String serialize0(final T iterable, final Class<?> clazz, final CSVFormat csvFormat) throws CsvException, IOException {
-        CsvMetaNode[] csvMetaNodes = resolveClass(clazz);
-        CSVPrinter printer = new CSVPrinter(new StringBuilder(), csvFormat);
-        printHeader(printer, csvMetaNodes);
-        printObjects(printer, csvMetaNodes, iterable);
-        return printer.getOut().toString();
-    }
-    
-    private static CsvMetaNode[] resolveClass(Class<?> clazz) throws CsvException {
-        Field[] fields = clazz.getDeclaredFields();
-        fields = PropertyResolver.filterIgnoreProperties(clazz, fields);
-        CsvMetaTree csvMetaTree = CsvMetaTreeBuilder.buildCsvMetaTree(fields);
-        CsvMetaTreeResolver.scanCsvMetaTree(csvMetaTree);
-        CsvMetaTreeResolver.resolveCsvMetaTree(csvMetaTree);
-        CsvMetaTreeResolver.sortCsvMetaTree(csvMetaTree);
-        CsvMetaNode[] csvMetaNodes = new CsvMetaNode[csvMetaTree.getLeafNodeCount()];
-        Utils.convertCsvMetaTreeIntoArray(csvMetaTree.getRoot(), csvMetaNodes, 0);
-        return csvMetaNodes;
-    }
-    
-    
-    private static void printHeader(final CSVPrinter printer, final CsvMetaNode[] csvMetaNodes) throws CsvException, IOException {
-        for (CsvMetaNode csvMetaNode : csvMetaNodes) {
-            CsvMetaNode[] path = CsvMetaTreeResolver.resolveNodePath(csvMetaNode);
-            csvMetaNode.setPath(path);
-            StringBuilder builder = new StringBuilder();
-            for (int i = path.length - 1; i > 0; i--) {
-                String prefix  = path[i].getCsvMetaInfo().getPrefix();
-                if(!CsvProperty.DEFAULT_PREFIX.equals(prefix)) {
-                    builder.append(prefix);
-                    builder.append("_");
-                }
-            }
-            String header = builder.append(csvMetaNode.getCsvMetaInfo().getHeader()).toString();
-            printer.print(header);
-        }
-        printer.println();
-    }
-    
-    private static <T extends Iterable<?>> void printObjects(final CSVPrinter printer, final CsvMetaNode[] csvMetaNodes, final T iterable) throws CsvException, IOException {
-        for (Object obj : iterable) {
-            printObject(printer, csvMetaNodes, obj);
-        }
-    }
-    
-    private static void printObjects(final CSVPrinter printer, final CsvMetaNode[] csvMetaNodes, final Object[] objects) throws CsvException, IOException {
-        for (Object obj : objects) {
-            printObject(printer, csvMetaNodes, obj);
-        }
-    }
-    
-    private static void printObject(final CSVPrinter printer, final CsvMetaNode[] csvMetaNodes, final Object obj) throws CsvException, IOException {
-        try{
-            if(obj == null) {
-                for(int i = 0; i < csvMetaNodes.length; i++)
-                    printer.print(csvMetaNodes[i].getCsvMetaInfo().getDefaultValue());
-                return;
-            }
-            for (CsvMetaNode csvMetaNode : csvMetaNodes) {
-                CsvMetaNode[] path = csvMetaNode.getPath();
-                Object value = obj;
-                if(value == null) {
-                    printer.print(csvMetaNode.getCsvMetaInfo().getDefaultValue());
-                    continue;
-                }
-                for (int i = path.length - 1; i >= 0; i--) {
-                    if(value == null) {
-                        value = csvMetaNode.getCsvMetaInfo().getDefaultValue();
-                        break;
-                    }
-                    Field f = path[i].getCsvMetaInfo().getField();
-                    if(i == 0) {
-                        if(f.getType().isArray()) {
-                            Object[] objects = (Object[])(f.get(value));
-                            if(objects == null) {
-                                value = csvMetaNode.getCsvMetaInfo().getDefaultValue();
-                                break;
-                            }
+	public <T> void serialize(final T object) throws CsvException, IOException {
+		serialize0(object);
+		csvPrinter.flush();
+	}
 
-                            StringBuilder builder = new StringBuilder();
-                            for (int j = 0; j < objects.length; j++) {
-                                builder.append(objects[j]);
-                                if(j != objects.length - 1) {
-                                    builder.append(",");
-                                }
-                            }
-                            value =builder.toString();
-                            break;
-                        }else if(f.getType().isAssignableFrom(Collection.class)) {
-                            Collection objects = (Collection)(f.get(value));
-                            if(objects == null) {
-                                value = csvMetaNode.getCsvMetaInfo().getDefaultValue();
-                                break;
-                            }
-                            StringBuilder builder = new StringBuilder();
-                            Iterator iterator = objects.iterator();
-                            for(;iterator.hasNext();) {
-                                Object e = iterator.next();
-                                builder.append(e);
-                                if(iterator.hasNext()) {
-                                    builder.append(",");
-                                }
-                            }
-                            value = builder.toString();
-                            break;
-                        }
-                    }
+	public <T> void serialize(final T[] array) throws CsvException, IOException {
+		serialize0(array);
+		csvPrinter.flush();
+	}
 
-                    value = f.get(value);
-                    if(value == null) {
-                        value = csvMetaNode.getCsvMetaInfo().getDefaultValue();
-                        break;
-                    }
-                }
-                Converter converter = csvMetaNode.getCsvMetaInfo().getConverter();
-                if(converter != null) {
-                    value = converter.convert(value);
-                }
-                printer.print(value);
-            }
-            printer.println();
-        }catch(IllegalAccessException e) {
-            throw new CsvException(e);
-        }catch(IllegalArgumentException e) {
-            throw new CsvException(e);
-        }
-    }
+	public <T> void serialize(final Iterable<T> iterable, final Class<T> clazz) throws CsvException, IOException {
+		serialize0(iterable, clazz);
+		csvPrinter.flush();
+	}
+
+	protected <T> void serialize0(final T object) throws CsvException, IOException {
+		this.clazz = object.getClass();
+		CsvMetaNode<?>[] csvMetaNodes = resolveClass(clazz);
+		printHeader(csvMetaNodes);
+		printObject(csvMetaNodes, object);
+	}
+
+	protected <T> void serialize0(final T[] object) throws CsvException, IOException {
+		this.clazz = object.getClass().getComponentType();
+		CsvMetaNode<?>[] csvMetaNodes = resolveClass(clazz);
+		printHeader(csvMetaNodes);
+		printObjects(csvMetaNodes, object);
+	}
+
+	protected <T> void serialize0(final Iterable<T> iterable, final Class<T> clazz) throws CsvException, IOException {
+		this.clazz = clazz;
+		CsvMetaNode<?>[] csvMetaNodes = resolveClass(clazz);
+		printHeader(csvMetaNodes);
+		printObjects(csvMetaNodes, iterable);
+	}
+
+	protected <T> CsvMetaNode<?>[] resolveClass(Class<T> clazz) throws CsvException {
+		Field[] fields = clazz.getDeclaredFields();
+		fields = PropertyResolver.filterIgnoreProperties(clazz, fields);
+		CsvMetaTree csvMetaTree = CsvMetaTreeBuilder.buildCsvMetaTree(fields);
+		CsvMetaTreeResolver.scanCsvMetaTree(csvMetaTree);
+		CsvMetaTreeResolver.resolveCsvMetaTree(csvMetaTree);
+		CsvMetaTreeResolver.sortCsvMetaTree(csvMetaTree);
+		CsvMetaNode<?>[] csvMetaNodes = new CsvMetaNode[csvMetaTree.getLeafNodeCount()];
+		Utils.convertCsvMetaTreeIntoArray(csvMetaTree.getRoot(), csvMetaNodes, 0);
+		return csvMetaNodes;
+	}
+
+	protected void printHeader(final CsvMetaNode<?>[] csvMetaNodes) throws CsvException, IOException {
+		for (CsvMetaNode<?> csvMetaNode : csvMetaNodes) {
+			CsvMetaNode<?>[] path = CsvMetaTreeResolver.resolveNodePath(csvMetaNode);
+			csvMetaNode.setPath(path);
+			StringBuilder builder = new StringBuilder();
+			for (int i = path.length - 1; i > 0; i--) {
+				String prefix = path[i].getCsvMetaInfo().getPrefix();
+				String header = path[i].getCsvMetaInfo().getPrefix();
+				if (!CsvProperty.DEFAULT_PREFIX.equals(prefix)) {
+					builder.append(prefix +  HEADER_DELIMITER);
+				} else if(!CsvProperty.DEFAULT_HEADER.equals(header)) {
+					builder.append(header + HEADER_DELIMITER);
+				}
+			}
+			String header = builder.append(csvMetaNode.getCsvMetaInfo().getHeader()).toString();
+			csvPrinter.print(header);
+		}
+		csvPrinter.println();
+	}
+
+	protected <T> void printObjects(final CsvMetaNode<?>[] csvMetaNodes, final Iterable<T> iterable) throws CsvException, IOException {
+		int count = 0;
+		for (Object obj : iterable) {
+			if(++count % flushThreshold == 0) {
+				csvPrinter.flush();
+			}
+			printObject(csvMetaNodes, obj);
+		}
+	}
+
+	protected <T> void printObjects(final CsvMetaNode<?>[] csvMetaNodes, final T[] objects) throws CsvException, IOException {
+		for (int i = 0; i < objects.length; i++) {
+			if((i + 1) % flushThreshold == 0) {
+				csvPrinter.flush();
+			}
+			printObject(csvMetaNodes, objects[i]);
+		}
+	}
+
+	protected <T> void printObject(final CsvMetaNode<?>[] csvMetaNodes, final T obj) throws CsvException, IOException {
+		try {
+			if (obj == null) {
+				return;
+			}
+			for (int i = 0; i < csvMetaNodes.length; i++) {
+				printField(csvMetaNodes[i], obj);
+			}
+			csvPrinter.println();
+		} catch (IllegalArgumentException e) {
+			throw new CsvException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private <T, C> void printField(final CsvMetaNode<C> csvMetaNode, final T obj) throws CsvException, IOException, IllegalArgumentException, IllegalAccessException {
+		final CsvMetaNode<?>[] path = csvMetaNode.getPath();
+		final CsvMetaInfo<C> csvMetaInfo = csvMetaNode.getCsvMetaInfo();
+		final SerializationConvertor convertor = csvMetaInfo.getConvertor();
+		final String defaultValue = csvMetaInfo.getDefaultValue();
+		final boolean needConvert = convertor != null;
+		Object obj2 = obj;
+		for (int j = path.length - 1; j >= 0; j--) {
+			final Field f = path[j].getCsvMetaInfo().getField();
+			obj2 = f.get(obj2);
+			if (obj2 == null) {
+				obj2 = defaultValue;
+				break;
+			} 
+			if (j == 0) { //only process array/collection at first layer
+				if (f.getType().isArray()) {
+					Object[] objects = (Object[]) obj2;
+					if (objects.length <= 0) {
+						obj2 = defaultValue;
+						break;
+					}
+
+					StringBuilder builder = new StringBuilder();
+					final int lastIndex =  objects.length - 1;
+					for (int k = 0; k < objects.length; k++) {
+						final Object object = objects[k];
+						if (needConvert) {
+							builder.append(convertor.convert(object));
+						} else {
+							builder.append(object);
+						}
+						if (k != lastIndex) {
+							builder.append(ARRAY_DELIMITER);
+						}
+					}
+					obj2 = builder.toString();
+					break;
+				} else if (Collection.class.isAssignableFrom(f.getType())) {
+					Collection<?> objects = (Collection<?>)obj2;
+					if (objects.size() <= 0) {
+						obj2 = defaultValue;
+						break;
+					}
+					StringBuilder builder = new StringBuilder();
+					Iterator<?> iterator = objects.iterator();
+					for (; iterator.hasNext(); ) {
+						Object object = iterator.next();
+						if (needConvert) {
+							builder.append(convertor.convert(object));
+						} else {
+							builder.append(object);
+						}
+						if (iterator.hasNext()) {
+							builder.append(ARRAY_DELIMITER);
+						}
+					}
+					obj2 = builder.toString();
+					break;
+				}
+			}
+			if (needConvert) {
+				obj2 = convertor.convert(obj2);
+				break;
+			}
+		}
+		csvPrinter.print(obj2);
+	}
+	
+	public static final class Builder {
+		Appendable out;
+		CSVFormat csvFormat = CSVFormat.DEFAULT;
+		int flushThreshold = 10000;
+		public Builder(Appendable out) {
+			super();
+			this.out = out;
+		}
+		
+		public Builder csvFormat(CSVFormat csvFormat) {
+			this.csvFormat = csvFormat;
+			return this;
+		}
+		
+		public Builder flushThreshold(int flushThreshold) {
+			this.flushThreshold = flushThreshold;
+			return this;
+		}
+		
+		public CsvSerializer build() throws IOException {
+			return new CsvSerializer(this);
+		}
+	}
+
+	@Override
+	public void close() throws IOException {
+		csvPrinter.close();
+	}
 }

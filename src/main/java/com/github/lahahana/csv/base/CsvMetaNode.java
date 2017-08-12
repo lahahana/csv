@@ -1,54 +1,68 @@
 package com.github.lahahana.csv.base;
 
-public class CsvMetaNode implements Comparable<CsvMetaNode>{
+/**
+ * An node which contains {@link CsvMetaInfo}, and it's location in {@link CsvMetaTreeBuilder.CsvMetaTree}
+ *  
+ * @author Lahahana
+ * */
 
-    private CsvMetaInfo csvMetaInfo;
+public class CsvMetaNode<T> implements Comparable<CsvMetaNode<T>>{
+
+    private CsvMetaInfo<T> csvMetaInfo;
     
-    private CsvMetaNode parent;
+    private CsvMetaNode<?> parent;
     
-    private CsvMetaNode[] childs;
+    private CsvMetaNode<?>[] childs;
     
-    private CsvMetaNode[] path;
+    private CsvMetaNode<?>[] path;
     
     private int depth;
 
-    public CsvMetaNode(CsvMetaInfo csvMetaInfo, CsvMetaNode parent, CsvMetaNode[] childs) {
+    public CsvMetaNode(CsvMetaInfo<T> csvMetaInfo, CsvMetaNode<T> parent, CsvMetaNode<T>[] childs) {
         super();
         this.csvMetaInfo = csvMetaInfo;
         this.parent = parent;
         this.childs = childs;
         this.depth = 0;
     }
+    
+    public CsvMetaNode(CsvMetaInfo<T> csvMetaInfo, CsvMetaNode<?> parent, CsvMetaNode<?>[] childs, int depth) {
+		super();
+		this.csvMetaInfo = csvMetaInfo;
+		this.parent = parent;
+		this.childs = childs;
+		this.depth = depth;
+	}
 
-    public CsvMetaInfo getCsvMetaInfo() {
+	public CsvMetaInfo<T> getCsvMetaInfo() {
         return csvMetaInfo;
     }
 
-    public void setCsvMetaInfo(CsvMetaInfo csvMetaInfo) {
+    public void setCsvMetaInfo(CsvMetaInfo<T> csvMetaInfo) {
         this.csvMetaInfo = csvMetaInfo;
     }
 
-    public CsvMetaNode getParent() {
+    public CsvMetaNode<?> getParent() {
         return parent;
     }
 
-    public void setParent(CsvMetaNode parent) {
+    public void setParent(CsvMetaNode<T> parent) {
         this.parent = parent;
     }
 
-    public CsvMetaNode[] getChilds() {
+    public CsvMetaNode<?>[] getChilds() {
         return childs;
     }
 
-    public void setChilds(CsvMetaNode[] childs) {
+    public void setChilds(CsvMetaNode<?>[] childs) {
         this.childs = childs;
     }
 
-    public CsvMetaNode[] getPath() {
+    public CsvMetaNode<?>[] getPath() {
         return path;
     }
 
-    public void setPath(CsvMetaNode[] path) {
+    public void setPath(CsvMetaNode<?>[] path) {
         this.path = path;
     }
 
@@ -61,7 +75,7 @@ public class CsvMetaNode implements Comparable<CsvMetaNode>{
     }
 
     @Override
-    public int compareTo(CsvMetaNode o) {
+    public int compareTo(CsvMetaNode<T> o) {
         return this.csvMetaInfo.compareTo(o.getCsvMetaInfo());
     }
     
