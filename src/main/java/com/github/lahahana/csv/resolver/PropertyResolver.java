@@ -1,6 +1,7 @@
 package com.github.lahahana.csv.resolver;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 import com.github.lahahana.csv.annotations.CsvIgnore;
@@ -31,7 +32,7 @@ public class PropertyResolver {
             int length = 0;
             for (int i = 0; i < arg.length; i++) {
                 Field f = arg[i];
-                if(f.isAnnotationPresent(CsvIgnore.class)) {
+                if(f.isAnnotationPresent(CsvIgnore.class) || Modifier.isTransient(f.getModifiers())) {
                     ignoreAnnotatedFields[length] = f;
                     length ++;
                 }

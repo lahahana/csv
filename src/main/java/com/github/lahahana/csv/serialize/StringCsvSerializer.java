@@ -9,13 +9,12 @@ import org.apache.commons.csv.CSVPrinter;
 
 import com.github.lahahana.csv.base.CsvMetaNode;
 import com.github.lahahana.csv.exceptions.CsvException;
-import com.github.lahahana.csv.serialize.CsvSerializer.Builder;
 
 public class StringCsvSerializer {
 	
 	private InnerStringCsvSerializer delegate;
 	
-	public StringCsvSerializer(Builder builder) throws IOException {
+	private StringCsvSerializer(Builder builder) throws IOException {
 		this.delegate = new InnerStringCsvSerializer(builder);
 	}
 
@@ -49,11 +48,13 @@ public class StringCsvSerializer {
 			int totalLength = ((Collection<T>)iterable).size();
 			for (Object obj : iterable) {
 				if(count++ == THRESHOLD) {
-					int predictLength = ((StringBuilder)out).length() / count * totalLength;
+					System.out.println(((StringBuilder)out).length() + " " + ((StringBuilder)out).capacity());
+					int predictLength = (((StringBuilder)out).length() / count + 2) * totalLength;
 					StringBuilder out2 = new StringBuilder(predictLength);
 					out2.append(out.toString());
 					out = out2;
 					updateFieldOfCSVPrinter();
+					System.out.println("Adjsut:" + ((StringBuilder)out).length() + " " + ((StringBuilder)out).capacity() + " " + predictLength);
 				} 
 				printObject(csvMetaNodes, obj);
 			}

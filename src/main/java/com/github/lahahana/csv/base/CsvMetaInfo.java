@@ -23,7 +23,7 @@ public class CsvMetaInfo<T> implements Comparable<CsvMetaInfo<T>>{
     
     private int order;
     
-    private SerializationConvertor<T> converter;
+    private SerializationConvertor<T> convertor;
 
     private String defaultValue;
 
@@ -61,12 +61,12 @@ public class CsvMetaInfo<T> implements Comparable<CsvMetaInfo<T>>{
         this.order = order;
     }
     
-    public SerializationConvertor<T> getConverter() {
-        return converter;
+    public SerializationConvertor<T> getConvertor() {
+        return convertor;
     }
 
-    public void setConverter(SerializationConvertor<T> converter) {
-        this.converter = converter;
+    public void setConverter(SerializationConvertor<T> convertor) {
+        this.convertor = convertor;
     }
 
     public String getDefaultValue() {

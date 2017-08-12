@@ -130,7 +130,7 @@ import java.util.TreeMap;
  *
  * @see <a href="package-summary.html">package documentation for more details</a>
  */
-public final class CSVParser implements Iterable<CSVRecord>, Closeable {
+public class CSVParser implements Iterable<CSVRecord>, Closeable {
 
     /**
      * Creates a parser for the given {@link File}.
@@ -490,7 +490,7 @@ public final class CSVParser implements Iterable<CSVRecord>, Closeable {
      * @throws IOException
      *             on parse error or input read-failure
      */
-    CSVRecord nextRecord() throws IOException {
+    protected CSVRecord nextRecord() throws IOException {
         CSVRecord result = null;
         this.record.clear();
         StringBuilder sb = null;

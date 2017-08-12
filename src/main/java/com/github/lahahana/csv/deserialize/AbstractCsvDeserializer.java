@@ -17,6 +17,7 @@ import com.github.lahahana.csv.exceptions.CsvException;
 import com.github.lahahana.csv.resolver.PropertyResolver;
 
 /**
+ * Provide class resolve implementation
  * @author Lahahana
  * */
 
@@ -32,7 +33,7 @@ public abstract class AbstractCsvDeserializer<C> implements CsvDeserializer<C> {
 	
 	List<C> buffer = new ArrayList<C>(0);
 	
-	public AbstractCsvDeserializer(Class<C> clazz, CSVFormat csvFormat) {
+	AbstractCsvDeserializer(Class<C> clazz, CSVFormat csvFormat) {
 		this.clazz = clazz;
 		this.csvFormat = csvFormat;
 		this.headerFieldsMap = new HashMap<String, Tuple<Field, DeserializationConvertor<?>>>();
@@ -45,7 +46,7 @@ public abstract class AbstractCsvDeserializer<C> implements CsvDeserializer<C> {
 		return new CsvResultSet<C>(this);
 	}
 
-	protected void resolveClass() throws CsvException {
+	private void resolveClass() throws CsvException {
 		Field[] declaredFields = clazz.getDeclaredFields();
 		Field[] csvPropertyField = PropertyResolver.filterIgnoreProperties(clazz, declaredFields);
 		for (int i = 0; i < csvPropertyField.length; i++) {
@@ -72,7 +73,7 @@ public abstract class AbstractCsvDeserializer<C> implements CsvDeserializer<C> {
 		}
 	}
 	
-	protected abstract void  tryExtractCsvHeader() throws IOException;
+	protected abstract void  tryExtractCsvHeader() throws CsvException, IOException;
 	
 	protected abstract void tryExtractCsvBody() throws CsvException, IOException;
 	

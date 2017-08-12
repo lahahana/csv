@@ -2,6 +2,7 @@ package com.github.lahahana.csv.resolver;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 
 import com.github.lahahana.csv.annotations.CsvProperty;
@@ -25,8 +26,12 @@ public class CsvMetaTreeResolver {
     
     private static <T> void scanCsvMetaTree0(CsvMetaNode<T> csvMetaNode) throws CsvException {
         if(csvMetaNode.getChilds() == null) {
-            Class<?> clazz = csvMetaNode.getCsvMetaInfo().getField().getType();
+        	Field f = csvMetaNode.getCsvMetaInfo().getField();
+            Class<?> clazz = f.getType();
             if(!Utils.isPrimitiveOrWrapper(clazz)) {
+            	if(clazz.isArray() || Collection.class.isAssignableFrom(clazz)) {
+            		return;
+            	}
                 Field[] fields = clazz.getDeclaredFields();
                 if(fields.length == 0) {
                     return;

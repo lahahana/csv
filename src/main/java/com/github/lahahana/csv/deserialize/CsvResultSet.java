@@ -21,7 +21,7 @@ public class CsvResultSet<C> {
 	 * Invoking this method as follows:
      * <blockquote>
      * <pre>
-	 * while((students = csvResultSet.next()) != null) {
+	 * while((result = csvResultSet.next()) != null) {
 	 *	 ...
 	 * }
      * </pre>

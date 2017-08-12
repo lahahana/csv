@@ -11,6 +11,7 @@ import com.github.lahahana.csv.convertor.DefaultDeserializationConvertor;
 import com.github.lahahana.csv.convertor.DefaultSerializationConvertor;
 import com.github.lahahana.csv.convertor.DeserializationConvertor;
 import com.github.lahahana.csv.convertor.SerializationConvertor;
+import com.github.lahahana.csv.serialize.CsvSerializer;
 
 /**
  * This Annotation is used to do customization when serialize property.
@@ -42,7 +43,7 @@ public @interface CsvProperty {
 
     /**
      * The CSV header of this properties, 
-     * otherwise, {@link com.github.lahahana.csv.serialize.CsvSerializer} will use {@link java.lang.reflect.Field} name as default header
+     * otherwise, {@link CsvSerializer} will use {@link java.lang.reflect.Field}'s name as default header
      * */
     String header() default DEFAULT_HEADER;
     

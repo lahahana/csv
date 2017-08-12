@@ -9,6 +9,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -19,9 +20,12 @@ import org.apache.commons.csv.CSVRecord;
 import com.github.lahahana.csv.base.Tuple;
 import com.github.lahahana.csv.convertor.DefaultDeserializationConvertor;
 import com.github.lahahana.csv.convertor.DeserializationConvertor;
+import com.github.lahahana.csv.exceptions.CsvException;
 import com.github.lahahana.csv.util.Utils;
 
 /**
+ * Deserialize data one-time. For big scale data, use {@link StreamCsvDeserializer}
+ * 
  * @author Lahahana
  * */
 
@@ -35,6 +39,9 @@ public class BatchCsvDeserializer<C, I> extends AbstractCsvDeserializer<C> {
 	}
 
 	private void initiateCsvParser(I in) throws IOException {
+		if(in == null) {
+			throw new IllegalArgumentException("csv data source can not be null");
+		}
 		if(in instanceof String)
 			csvParser = CSVParser.parse((String)in, csvFormat);
 		else if(in instanceof File)
@@ -46,10 +53,14 @@ public class BatchCsvDeserializer<C, I> extends AbstractCsvDeserializer<C> {
 	}
 	
 	@Override
-	protected void tryExtractCsvHeader() {
-		Set<Entry<String, Integer>> headersSequences = csvParser.getHeaderMap().entrySet();
-		headerSequenceMap = new HashMap<Integer, String>(headersSequences.size());
-		for (Entry<String, Integer> entry : headersSequences) {
+	protected void tryExtractCsvHeader() throws CsvException {
+		Map<String, Integer> headerMap = csvParser.getHeaderMap();
+		if(headerMap == null) {
+			throw new CsvException("csv header not exsits");
+		} 
+		Set<Entry<String, Integer>> headerSequencePairs = headerMap.entrySet();
+		headerSequenceMap = new HashMap<Integer, String>(headerSequencePairs.size());
+		for (Entry<String, Integer> entry : headerSequencePairs) {
 			headerSequenceMap.put(entry.getValue(), entry.getKey());
 		}
 	}
@@ -75,13 +86,13 @@ public class BatchCsvDeserializer<C, I> extends AbstractCsvDeserializer<C> {
 				throw new RuntimeException("Construct of " + clazz.getName() + "must be public", e);
 			}
 			for (int j = 0; j < record.size(); j++) {
-				String value = record.get(j);
 				String header = headerSequenceMap.get(j);
 				if(header == null) 
 					continue;
 				Tuple<Field, DeserializationConvertor<?>> tuple = headerFieldsMap.get(header);
 				if(tuple == null) 
 					continue;
+				String value = record.get(j);
 				Field field = tuple.getE1();
 				if(field != null) {//ignore unspecified column
 					DeserializationConvertor<?> convertor = tuple.getE2();
