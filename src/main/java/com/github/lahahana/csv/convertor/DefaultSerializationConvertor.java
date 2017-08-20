@@ -5,7 +5,7 @@ import com.github.lahahana.csv.annotations.CsvProperty;
 /**
  * This annotation is for convert property value,
  * if property need convert, you should implement this interface.
- * And set the converter class into {@link CsvProperty#convertor()}
+ * And set the converter class into {@link CsvProperty#serializationConvertor()}
  * */
 
 public final class DefaultSerializationConvertor implements SerializationConvertor<Object> {
