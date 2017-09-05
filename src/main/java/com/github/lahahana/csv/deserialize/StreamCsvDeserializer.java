@@ -2,6 +2,7 @@ package com.github.lahahana.csv.deserialize;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,17 +81,20 @@ public class StreamCsvDeserializer<C, I extends Reader> extends AbstractCsvDeser
 			} 
 			CSVRecord record = tryExtractCsvRow();
 			if (record == null) {
+				if(buffer != null) {
+					buffer.clear();
+				}
 				available = false;
 				in.close();
 				return;
 			}
 			C  obj = null;
 			try {
-				obj = clazz.newInstance();
-			} catch (InstantiationException e) {
+				Constructor<C> constructor = clazz.getDeclaredConstructor();
+				constructor.setAccessible(true);
+				obj = constructor.newInstance();
+			} catch(Exception e) {
 				throw new RuntimeException(e);
-			} catch (IllegalAccessException e) {
-				throw new RuntimeException("Construct of " + clazz.getName() + "must be public", e);
 			}
 			
 			for (int i = 0; i < record.size(); i++) {

@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation that can be used to suppress 
- * serialization/deserialization of properties.
+ * serialization/deserialization of specific properties.
  *
  * @author Lahahana
  */

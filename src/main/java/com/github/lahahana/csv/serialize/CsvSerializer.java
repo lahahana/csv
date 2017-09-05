@@ -14,6 +14,7 @@ import com.github.lahahana.csv.base.CsvMetaInfo;
 import com.github.lahahana.csv.base.CsvMetaNode;
 import com.github.lahahana.csv.base.CsvMetaTreeBuilder;
 import com.github.lahahana.csv.base.CsvMetaTreeBuilder.CsvMetaTree;
+import com.github.lahahana.csv.convertor.DefaultSerializationConvertor;
 import com.github.lahahana.csv.convertor.SerializationConvertor;
 import com.github.lahahana.csv.exceptions.CsvException;
 import com.github.lahahana.csv.resolver.CsvMetaTreeResolver;
@@ -29,13 +30,13 @@ import com.github.lahahana.csv.util.Utils;
  * <p>
  * {@link #serialize(Iterable, Class)}
  * <p>
- * {@link #serialize(Iterable, Class)}
+ * In order to avoid resource leak risk, please call {@link #close()} after serialization.
  * 
  * @author Lahahana
  */
 public class CsvSerializer implements Closeable {
 	
-	private static final String ARRAY_DELIMITER = ",";
+	private static final String DELIMITER = ",";
 	
 	private static final String HEADER_DELIMITER = "_";
 	
@@ -43,17 +44,14 @@ public class CsvSerializer implements Closeable {
 	
 	private Class<?> clazz;
 	
-	private CSVFormat csvFormat;
-	
 	Appendable out;
 	
 	CSVPrinter csvPrinter;
 	
 	CsvSerializer(Builder builder) throws IOException {
 		this.out = builder.out;
-		this.csvFormat = builder.csvFormat;
-		this.csvPrinter = new CSVPrinter(this.out, this.csvFormat);
 		this.flushThreshold = builder.flushThreshold;
+		this.csvPrinter = new CSVPrinter(this.out, builder.csvFormat);
 	}
 
 	public <T> void serialize(final T object) throws CsvException, IOException {
@@ -136,7 +134,7 @@ public class CsvSerializer implements Closeable {
 
 	protected <T> void printObjects(final CsvMetaNode<?>[] csvMetaNodes, final T[] objects) throws CsvException, IOException {
 		for (int i = 0; i < objects.length; i++) {
-			if((i + 1) % flushThreshold == 0) {
+			if(i % flushThreshold == 0) {
 				csvPrinter.flush();
 			}
 			printObject(csvMetaNodes, objects[i]);
@@ -152,20 +150,18 @@ public class CsvSerializer implements Closeable {
 				printField(csvMetaNodes[i], obj);
 			}
 			csvPrinter.println();
-		} catch (IllegalArgumentException e) {
-			throw new CsvException(e);
 		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
+			throw new CsvException(e);
 		}
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private <T, C> void printField(final CsvMetaNode<C> csvMetaNode, final T obj) throws CsvException, IOException, IllegalArgumentException, IllegalAccessException {
+	@SuppressWarnings("unchecked")
+	private <T, C> void printField(final CsvMetaNode<C> csvMetaNode,final T obj) throws CsvException, IOException, IllegalArgumentException, IllegalAccessException {
 		final CsvMetaNode<?>[] path = csvMetaNode.getPath();
 		final CsvMetaInfo<C> csvMetaInfo = csvMetaNode.getCsvMetaInfo();
-		final SerializationConvertor convertor = csvMetaInfo.getConvertor();
+		final SerializationConvertor<C> convertor = csvMetaInfo.getConvertor();
 		final String defaultValue = csvMetaInfo.getDefaultValue();
-		final boolean needConvert = convertor != null;
+		final boolean needConvert = convertor != null && !(convertor instanceof DefaultSerializationConvertor);
 		Object obj2 = obj;
 		for (int j = path.length - 1; j >= 0; j--) {
 			final Field f = path[j].getCsvMetaInfo().getField();
@@ -176,44 +172,44 @@ public class CsvSerializer implements Closeable {
 			} 
 			if (j == 0) { //only process array/collection at first layer
 				if (f.getType().isArray()) {
-					Object[] objects = (Object[]) obj2;
-					if (objects.length <= 0) {
+					C[] objects = (C[]) obj2;
+					if (objects.length == 0) {
 						obj2 = defaultValue;
 						break;
 					}
-
+					
 					StringBuilder builder = new StringBuilder();
 					final int lastIndex =  objects.length - 1;
 					for (int k = 0; k < objects.length; k++) {
-						final Object object = objects[k];
+						final C object = objects[k];
 						if (needConvert) {
 							builder.append(convertor.convert(object));
 						} else {
 							builder.append(object);
 						}
 						if (k != lastIndex) {
-							builder.append(ARRAY_DELIMITER);
+							builder.append(DELIMITER);
 						}
 					}
 					obj2 = builder.toString();
 					break;
 				} else if (Collection.class.isAssignableFrom(f.getType())) {
-					Collection<?> objects = (Collection<?>)obj2;
-					if (objects.size() <= 0) {
+					Collection<C> objects = (Collection<C>)obj2;
+					if (objects.size() == 0) {
 						obj2 = defaultValue;
 						break;
 					}
 					StringBuilder builder = new StringBuilder();
-					Iterator<?> iterator = objects.iterator();
+					Iterator<C> iterator = objects.iterator();
 					for (; iterator.hasNext(); ) {
-						Object object = iterator.next();
+						C object = iterator.next();
 						if (needConvert) {
 							builder.append(convertor.convert(object));
 						} else {
 							builder.append(object);
 						}
 						if (iterator.hasNext()) {
-							builder.append(ARRAY_DELIMITER);
+							builder.append(DELIMITER);
 						}
 					}
 					obj2 = builder.toString();
@@ -221,19 +217,29 @@ public class CsvSerializer implements Closeable {
 				}
 			}
 			if (needConvert) {
-				obj2 = convertor.convert(obj2);
+				obj2 = convertor.convert((C) obj2);
 				break;
 			}
 		}
 		csvPrinter.print(obj2);
 	}
 	
+
+	@Override
+	public void close() throws IOException {
+		csvPrinter.close();
+		csvPrinter = null;
+		out = null;
+	}
+	
 	public static final class Builder {
 		Appendable out;
 		CSVFormat csvFormat = CSVFormat.DEFAULT;
-		int flushThreshold = 10000;
+		int flushThreshold = 1000;
+		
 		public Builder(Appendable out) {
 			super();
+			assert out != null;
 			this.out = out;
 		}
 		
@@ -252,8 +258,4 @@ public class CsvSerializer implements Closeable {
 		}
 	}
 
-	@Override
-	public void close() throws IOException {
-		csvPrinter.close();
-	}
 }
