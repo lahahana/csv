@@ -1,14 +1,14 @@
 # csv
-Annotation based CSV serialization/deserialization tool
+Java Annotation based CSV serialization/deserialization tool.It provide batch style api for small scale data, also, provide streaming style api for large scale data.
 
-### # 这是一个根据Java Class Field进行CSV序列化的工具，基于注解的形式，只需要在相关类上添加注解，就可以实现自定义的CSV序列化方案
+### # 这是一个根据Java Class Field进行CSV序列化/反序列化的工具，基于注解的形式，只需要在相关类上添加注解，就可以实现自定义的CSV序列化/反序列化方案
 
 通过调用`CsvSerializer.serialize(*)`来进行CSV序列化
 
 相关注解：
 * `@CsvIgnore` :此注解为标识性注解，`@Target({ElementType.FIELD})`, 表示该字段在序列化时会被忽略
 * `@CsvIgnoreProperties`：此注解`@Target({ElementType.TYPE})`，在类级别指定当前类所拥有字段的哪些在序列化时忽略
-* `@CsvProperty`：此注解`@Target({ElementType.TYPE})`，通过指定此注解的`header`，`order`,分别可以实现在序列化时指定指定的字段的csv header的值，字段的序列化顺序。最重要的一个属性是`converter`，如果需要对特定字段在序列化时进行一些数据转换的操作，可以通过继承`com.alpha.csv.convertor.Convertor`接口,实现自定义的Convertor。
+* `@CsvProperty`：此注解`@Target({ElementType.TYPE})`，通过指定此注解的`header`，`order`,分别可以实现在序列化时指定指定的字段的csv header的值，字段的序列化顺序。最重要的一个属性是`serializationConvertor/deserializationConvertor`，如果需要对特定字段在序列化/反序列化时进行一些数据转换的操作，可以通过继承`com.alpha.csv.convertor.SerializationConvertor/DeserializationConvertor`接口,实现自定义的Convertor。
 
 **Demo：**
     
