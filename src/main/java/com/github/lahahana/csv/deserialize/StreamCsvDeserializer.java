@@ -25,7 +25,7 @@ import com.github.lahahana.csv.util.Utils;
  * Example Code:
  * <blockquote>
  * <pre>
- * FileReader in = new FileReader("D:\\data.csv");
+ * FileReader in = new FileReader("data.csv");
  * CsvDeserializer deserializer = new StreamCsvDeserializer.Builder(Object.class, in).build();
  * CsvResultSet csvResultSet = deserializer.deserialize();
  * List result = null;

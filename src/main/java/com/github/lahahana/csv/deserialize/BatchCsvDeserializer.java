@@ -116,6 +116,7 @@ public class BatchCsvDeserializer<C, I> extends AbstractCsvDeserializer<C> {
 		return csvParser.getRecords();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static final class Builder<C, I> {
 		Class<C> clazz;
 		I in;

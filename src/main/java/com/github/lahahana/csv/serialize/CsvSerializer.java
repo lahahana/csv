@@ -40,6 +40,8 @@ public class CsvSerializer implements Closeable {
 	
 	private static final String HEADER_DELIMITER = "_";
 	
+	private static final ResolvedClazzCacheHolder holder = new ResolvedClazzCacheHolder();
+	
 	private int flushThreshold;
 	
 	private Class<?> clazz;
@@ -91,13 +93,18 @@ public class CsvSerializer implements Closeable {
 	}
 
 	protected <T> CsvMetaNode<?>[] resolveClass(Class<T> clazz) throws CsvException {
+		CsvMetaNode<?>[] csvMetaNodes;
+		csvMetaNodes = holder.getResolvedClazzCache(clazz);
+		if(csvMetaNodes != null) {
+			return csvMetaNodes;
+		}
 		Field[] fields = clazz.getDeclaredFields();
 		fields = PropertyResolver.filterIgnoreProperties(clazz, fields);
 		CsvMetaTree csvMetaTree = CsvMetaTreeBuilder.buildCsvMetaTree(fields);
 		CsvMetaTreeResolver.scanCsvMetaTree(csvMetaTree);
 		CsvMetaTreeResolver.resolveCsvMetaTree(csvMetaTree);
 		CsvMetaTreeResolver.sortCsvMetaTree(csvMetaTree);
-		CsvMetaNode<?>[] csvMetaNodes = new CsvMetaNode[csvMetaTree.getLeafNodeCount()];
+		csvMetaNodes = new CsvMetaNode[csvMetaTree.getLeafNodeCount()];
 		Utils.convertCsvMetaTreeIntoArray(csvMetaTree.getRoot(), csvMetaNodes, 0);
 		return csvMetaNodes;
 	}
