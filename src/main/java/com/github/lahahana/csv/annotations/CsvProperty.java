@@ -20,7 +20,7 @@ import com.github.lahahana.csv.serialize.CsvSerializer;
  *                <p>custom serialization order, use {@link #order()}
  *                <p>custom default value, use {@link #defaultValue()}
  *                <p>custom property serialization convert, use {@link #serializationConvertor()}
- *                <p>custom property serialization convert, use {@link #deserializationConvertor()}
+ *                <p>custom property deserialization convert, use {@link #deserializationConvertor()}
  *                <p>custom prefix, use {@link #prefix()}
  * 
  * @author Lahahana
