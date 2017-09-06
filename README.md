@@ -32,7 +32,7 @@ Annotation based CSV serialization/deserialization tool
         @CsvProperty(header="ID", order=0)
         private int id = 10001;
     
-        @CsvProperty(header = "Birthday", order=2, converter = TimeToDateConvertor.class)
+        @CsvProperty(header = "Birthday", order=2, convertor = TimeToDateConvertor.class)
         public long birthday= System.currentTimeMillis();
     
         private Address address = new Address();
