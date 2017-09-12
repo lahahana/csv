@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
 
 import com.github.lahahana.csv.annotations.CsvProperty;
 import com.github.lahahana.csv.base.Tuple;
@@ -32,6 +33,8 @@ public abstract class AbstractCsvDeserializer<C> implements CsvDeserializer<C> {
 	CSVFormat csvFormat;
 	
 	List<C> buffer = new ArrayList<C>(0);
+	
+	CSVParser csvParser;
 	
 	AbstractCsvDeserializer(Class<C> clazz, CSVFormat csvFormat) {
 		this.clazz = clazz;
@@ -76,5 +79,11 @@ public abstract class AbstractCsvDeserializer<C> implements CsvDeserializer<C> {
 	protected abstract void  tryExtractCsvHeader() throws CsvException, IOException;
 	
 	protected abstract void tryExtractCsvBody() throws CsvException, IOException;
+	
+	@Override
+	public void close() throws IOException {
+		buffer = null;
+		csvParser.close();
+	}
 	
 }
