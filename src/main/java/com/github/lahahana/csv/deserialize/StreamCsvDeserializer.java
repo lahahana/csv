@@ -48,8 +48,6 @@ public class StreamCsvDeserializer<C, I extends Reader> extends AbstractCsvDeser
 	
 	private boolean available = true;
 	
-	private CSVParserProxy csvParser;
-	
 	private StreamCsvDeserializer(Builder<C, I> builder) throws IOException {
 		super(builder.clazz, builder.csvFormat);
 		this.bufferSize = builder.bufferSize;
@@ -81,9 +79,6 @@ public class StreamCsvDeserializer<C, I extends Reader> extends AbstractCsvDeser
 			} 
 			CSVRecord record = tryExtractCsvRow();
 			if (record == null) {
-				if(buffer != null) {
-					buffer.clear();
-				}
 				available = false;
 				in.close();
 				return;
@@ -126,7 +121,7 @@ public class StreamCsvDeserializer<C, I extends Reader> extends AbstractCsvDeser
 	}
 	
 	protected CSVRecord tryExtractCsvRow() throws IOException {
-		return csvParser.tryFetchNextRecord();
+		return ((CSVParserProxy)csvParser).tryFetchNextRecord();
 	}
 	
 	public static final class Builder<C, I extends Reader> {

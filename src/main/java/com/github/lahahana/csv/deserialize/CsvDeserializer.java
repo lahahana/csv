@@ -1,5 +1,6 @@
 package com.github.lahahana.csv.deserialize;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 import com.github.lahahana.csv.exceptions.CsvException;
@@ -11,7 +12,7 @@ import com.github.lahahana.csv.exceptions.CsvException;
  * @author Lahahana
  * */
 
-public interface CsvDeserializer<C> {
+public interface CsvDeserializer<C> extends Closeable {
 
 	CsvResultSet<C> deserialize() throws CsvException, IOException;
 	

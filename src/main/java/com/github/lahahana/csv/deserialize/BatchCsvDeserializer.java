@@ -31,8 +31,6 @@ import com.github.lahahana.csv.util.Utils;
 
 public class BatchCsvDeserializer<C, I> extends AbstractCsvDeserializer<C> {
 	
-	private CSVParser csvParser;
-	
 	private BatchCsvDeserializer(Builder<C, I> builder) throws IOException {
 		super(builder.clazz, builder.csvFormat);
 		initiateCsvParser(builder.in);
