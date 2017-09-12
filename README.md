@@ -54,4 +54,10 @@ Java Annotation based CSV serialization/deserialization tool.It provide batch st
     ID,Name,Birthday,city  
     10001,Lahahana,Tue Mar 28 21:14:59 GMT+08:00 2017,Hangzhou  
     10001,Lahahana,Tue Mar 28 21:14:59 GMT+08:00 2017,Hangzhou  
-
+    
+**Maven Dependency** 
+<dependency>
+    <groupId>com.github.lahahana</groupId>
+    <artifactId>csv</artifactId>
+    <version>2.0.1</version>
+</dependency>
