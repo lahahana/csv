@@ -39,13 +39,13 @@ Java Annotation based CSV serialization/deserialization tool.It provide batch st
     
         public static void main(String []args) throws CsvException, IOException {
             List persons = new ArrayList();
-            Person p = new Person();
+            Person person = new Person();
             for(int i=0;i<10;i++)
-                list.add(p);    
+                list.add(person);    
             FileWriter out = new FileWriter("result.csv");
             CsvSerializer serializer = new CsvSerializer.Builder(out).build();
             serializer.serialize(persons, Person.class);
-            out.close();
+            serializer.close();
         }
     }
 
@@ -55,9 +55,12 @@ Java Annotation based CSV serialization/deserialization tool.It provide batch st
     10001,Lahahana,Tue Mar 28 21:14:59 GMT+08:00 2017,Hangzhou  
     10001,Lahahana,Tue Mar 28 21:14:59 GMT+08:00 2017,Hangzhou  
     
-**Maven Dependency** 
-<dependency>
-    <groupId>com.github.lahahana</groupId>
-    <artifactId>csv</artifactId>
-    <version>2.0.1</version>
-</dependency>
+**Maven Dependency:** 
+   ```
+    <dependency>  
+        <groupId>com.github.lahahana</groupId>  
+        <artifactId>csv</artifactId>  
+        <version>2.0.1</version>  
+    </dependency>
+   ```
+   
